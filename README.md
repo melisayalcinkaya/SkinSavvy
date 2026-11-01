@@ -8,7 +8,9 @@
 
 **Kişisel cilt bakım asistanı.** Ürünlerinin içerik listesini cilt profiline göre
 yorumlar, aynı akşam kullanılmaması gereken ürünleri rutininde yakalar, açılan
-ürünlerin bozulma tarihini hatırlatır.
+ürünlerin bozulma tarihini hatırlatır. Ürün satmaz: katalog, kullanıcıların eklediği
+ve ekibin onayladığı ürünlerden oluşan **topluluk veritabanıdır**; bilgiyi kullanıcı
+yorumları tamamlar.
 
 Cilt bakımında sorun genelde ürünün kendisi değil, birlikte nasıl kullanıldığıdır:
 retinol ile peeling tonik aynı akşam sürülür, hassas cilde parfümlü serum alınır,
@@ -50,11 +52,17 @@ kullanıcı fark etmeden önce gösterir.
   zil simgesinde rozetle görünür.
 - **Ürün dolabı:** kullanılanlar, alınacaklar, bitenler; kalan miktar, puan, not,
   "tekrar alır mıyım", bitenleri paylaşma.
-- **Ürün önerisi ve yönetici onayı:** katalogda olmayan ürün (fotoğraf, içerik
-  listesi, barkod) önerilir; onaylanana kadar yalnızca öneren görür. Reddedilirse
-  gerekçesi öneren kişiye gösterilir.
-- **Yorumlar:** ürün başına tek yorum (ikincisi günceller), puan ortalaması
-  katalog puanıyla birleşir.
+- **Topluluk ürün veritabanı:** Ücretli ve kapsamlı bir kozmetik API'si olmadığı
+  için ürünleri kullanıcılar ekler (fotoğraf, içerik listesi, barkod, cilt tipleri).
+  Öneri, ekip onaylayana kadar yalnızca ekleyene görünür; aynı ad/marka ya da barkod
+  ikinci kez eklenemez. Ekip, uygulama içindeki **onay kuyruğundan** fotoğrafı,
+  bilgileri ve kaç içeriğin tanındığını görüp onaylar ya da hazır/özel bir gerekçeyle
+  reddeder. Ekleyen kişiye sonuç zil simgesinden bildirilir; reddedilen öneri
+  düzeltilip yeniden gönderilebilir. Ürün sayfasında "Ekleyen: Zeynep K." yazar,
+  yeni onaylananlar "Yeni" etiketi alır.
+- **Yorumlar:** ürün başına tek yorum (ikincisi günceller). Puanlar yalnızca gerçek
+  yorumlardan hesaplanır; yorumu olmayan ürün "Henüz değerlendirme yok" der. Fiyat,
+  "çok satan" gibi mağaza ögeleri yok.
 - **İki çalışma modu:** varsayılan **cihaz modu** her şeyi tarayıcıda/telefonda
   tutar (demo böyle çalışır). `API_URL` verilirse **sunucu modu**: hesap, profil,
   katalog, öneriler ve yorumlar FastAPI sunucusundan gelir.
@@ -137,8 +145,9 @@ cd app
 flutter run -d chrome --web-port 8080 --dart-define=API_URL=http://localhost:8000
 ```
 
-Yönetici, önerileri `http://localhost:8000/docs` üzerinden onaylar ya da reddeder
-(`/admin/submissions`).
+Yönetici hesabıyla girildiğinde profilde **Onay Bekleyen Ürünler** görünür (API'de
+`/admin/submissions`). Cihaz modundaki demo hesabı, akışın tamamı denenebilsin diye
+ekip yetkisiyle açılır; sunucudaki demo hesabı ise sıradan kullanıcıdır.
 
 ### Demo kataloğu
 
@@ -154,7 +163,7 @@ cd app && dart run tool/export_demo_catalog.dart
 | | Kapsam |
 |---|---|
 | **Uygulama** (`flutter test`) | içerik eşleştirme ve analiz kuralları, rutin danışmanı, hatırlatmalar (PAO / SKT, ay sonu taşması), kalıcılık ve kullanıcı ayrımı, kimlik doğrulama, sahte sunucuyla sunucu modu (token yenileme, çevrimdışı yorum kuyruğu, yarış durumu), demo / kayıt / karşılama akışları, **320 px, 390 px ve 1280 px'te bütün ana ekranlarda taşma taraması** |
-| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay/ret, yorumlar ve puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
+| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay/ret, yorumlardan hesaplanan puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
 
 CI her gönderimde: `dart format`, `flutter analyze`, testler, web derlemesi; `ruff`,
 `pytest --cov`, Docker imajı + duman testi; ikisi de geçerse GitHub Pages'e yayın.
@@ -187,9 +196,11 @@ FastAPI backend. It analyses a product's INCI list against the user's skin profi
 (allergens, fragrance on sensitive skin, drying alcohol, comedogenic ingredients,
 helpful actives), flags routine conflicts such as a retinoid and an acid on the same
 evening (only on the weekdays they overlap), and reminds users when an opened
-product passes its period-after-opening or printed expiry date. The backend provides
-accounts with argon2 and rotating refresh tokens (reuse detection revokes the login
-family), a catalog with admin-moderated user submissions, and reviews. The app runs
+product passes its period-after-opening or printed expiry date. It sells nothing: the
+catalog is a community database built from user submissions that the team approves
+in an in-app review queue, and ratings come only from real reviews. The backend
+provides accounts with argon2 and rotating refresh tokens (reuse detection revokes
+the login family), the moderated catalog and reviews. The app runs
 fully on-device by default (the GitHub Pages demo) or against the API with
 `--dart-define=API_URL=...`. CI runs format, analysis, Flutter and pytest suites, a
 layout overflow scan at 320/390/1280 px, a Docker smoke test, and deploys the web build.
