@@ -7,9 +7,7 @@ import '../../data/models/json.dart';
 import '../../data/remote/api_client.dart';
 import '../../state/catalog_controller.dart';
 import '../../data/demo/demo_reviews.dart';
-import '../screens/products/add_product_screen.dart';
 import '../../state/review_controller.dart';
-import '../../data/models/product.dart';
 
 /// Sunucu modunda katalog yüklenirken ya da yüklenemediğinde gösterilir.
 class CatalogStatusBanner extends StatelessWidget {
@@ -56,59 +54,6 @@ class CatalogStatusBanner extends StatelessWidget {
           TextButton(
             onPressed: catalog.isLoading ? null : catalog.reload,
             child: const Text('Tekrar dene'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Reddedilen önerinin gerekçesi (yalnızca öneren görür) ve düzeltme düğmesi.
-class RejectedNotice extends StatelessWidget {
-  const RejectedNotice({super.key, required this.product});
-
-  final Product product;
-
-  @override
-  Widget build(BuildContext context) {
-    final reason = product.rejectReason;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(13, 13, 13, 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFEEE8),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Önerin onaylanmadı',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.accent,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            reason == null || reason.isEmpty
-                ? 'Ekip bir gerekçe yazmadı.'
-                : 'Gerekçe: $reason',
-            style: const TextStyle(fontSize: 12, color: AppColors.textDark),
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AddProductScreen(resubmit: product),
-                ),
-              ),
-              icon: const Icon(Icons.edit_outlined, size: 15),
-              label: const Text('Düzeltip yeniden gönder'),
-            ),
           ),
         ],
       ),

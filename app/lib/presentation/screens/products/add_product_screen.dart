@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/skin_options.dart';
@@ -13,41 +12,33 @@ import '../../../state/session_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/analysis_card.dart';
-import '../../widgets/product_image.dart';
+import '../../widgets/product_photo.dart';
 import 'pending_approval_screen.dart';
 import 'product_detail_screen.dart';
 
 class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key, this.initialName = '', this.resubmit});
+  const AddProductScreen({super.key, this.initialName = ''});
 
   /// Arama kutusuna yazılan ad ("Ürün bulunamadı" ekranından gelince).
   final String initialName;
 
-  /// Reddedilen bir öneri: form onun bilgileriyle dolar, gönderilince
-  /// eski öneri yerine yenisi incelemeye girer.
-  final Product? resubmit;
   @override
   State<AddProductScreen> createState() => _AddProductScreenState();
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final Product? _old = widget.resubmit;
-  late final _nameCtrl = TextEditingController(
-    text: _old?.name ?? widget.initialName.trim(),
-  );
-  late final _brandCtrl = TextEditingController(text: _old?.brand);
-  late final _descCtrl = TextEditingController(text: _old?.description);
-  late final _ingredientsCtrl = TextEditingController(
-    text: _old?.ingredients.join(', '),
-  );
-  late final _barcodeCtrl = TextEditingController(text: _old?.barcode);
+  late final _nameCtrl = TextEditingController(text: widget.initialName.trim());
+  final _brandCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _ingredientsCtrl = TextEditingController();
+  final _barcodeCtrl = TextEditingController();
 
-  late String? _selectedCategory = _old?.category;
-  late final List<String> _selectedSkinTypes = [...?_old?.skinTypes];
-  late String? _imageData = (_old?.imageUrl.isEmpty ?? true)
-      ? null
-      : _old!.imageUrl;
+  String? _selectedCategory;
+  final List<String> _selectedSkinTypes = [];
+
+  /// Seçilen fotoğraf (data URL). Zorunlu: ekip ürünü fotoğraftan doğrular.
+  String? _imageData;
   bool _isLoading = false;
   int _currentStep = 0;
 
@@ -73,27 +64,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   // ── Fotoğraf seçici ────────────────────────────────────────
   Future<void> _pickImage() async {
-    try {
-      // Görsel cihazda küçültülür; hem depolama hem yükleme boyutu düşer.
-      final picked = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 800,
-        imageQuality: 80,
-      );
-      if (picked == null) return;
-      final image = toImageDataUrl(
-        await picked.readAsBytes(),
-        maxKb: maxProductImageKb,
-      );
-      if (image.error != null) {
-        _showError(image.error!);
-        return;
-      }
-      setState(() => _imageData = image.url);
-    } on PlatformException {
-      _showError('Galeriye erişilemedi. İzinleri kontrol edin.');
-    }
+    final url = await pickProductPhoto(_showError);
+    if (url != null && mounted) setState(() => _imageData = url);
   }
 
   // ── Form gönder ────────────────────────────────────────────
@@ -115,13 +87,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
+    final image = _imageData;
+    if (image == null) {
+      _showError('Ürün fotoğrafı ekleyin; ekip ürünü fotoğraftan doğrular.');
+      setState(() => _currentStep = 2);
+      return;
+    }
+
     final catalog = context.read<CatalogController>();
     final duplicate = catalog.findDuplicate(
       _nameCtrl.text,
       _brandCtrl.text,
       barcode: _barcodeCtrl.text,
     );
-    if (duplicate != null && duplicate.id != _old?.id) {
+    if (duplicate != null) {
       _showDuplicateWarning(duplicate.id);
       return;
     }
@@ -139,9 +118,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ingredients: ingredients,
         description: _descCtrl.text,
         barcode: _barcodeCtrl.text,
-        imageUrl: _imageData ?? '',
+        imageUrl: image,
         submitterName: context.read<SessionController>().user?.publicName,
-        replacing: _old?.id,
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -150,11 +128,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
     if (!mounted) return;
-    final shelf = context.read<ShelfController>();
-    // Düzeltilen önerinin eski dolap kaydı yenisiyle değişir (çift olmasın).
-    final previous = _old == null ? null : shelf.activeForProduct(_old.id);
-    if (previous != null) shelf.remove(previous.id);
-    shelf.addProduct(product);
+    context.read<ShelfController>().addProduct(product);
     setState(() => _isLoading = false);
     Navigator.pushReplacement(
       context,
@@ -470,65 +444,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionTitle('Ürün Fotoğrafı (Opsiyonel)'),
+        _sectionTitle('Ürün Fotoğrafı *'),
         const Text(
           'En fazla $maxProductImageKb KB • JPG veya PNG',
           style: TextStyle(fontSize: 10, color: AppColors.textGrey),
         ),
         const SizedBox(height: 12),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              color: AppColors.cream,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: AppColors.softGreen,
-                width: 2,
-                style: BorderStyle.solid,
-              ),
-            ),
-            child: _imageData != null
-                ? ProductImage(_imageData!, radius: 14)
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightGreen,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt_outlined,
-                          color: AppColors.primary,
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Fotoğraf Seç',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Galeriden seç veya fotoğraf çek',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textGrey,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
+        ProductPhotoBox(image: _imageData, onTap: _pickImage),
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.all(14),

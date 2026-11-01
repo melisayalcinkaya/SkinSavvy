@@ -180,7 +180,9 @@ class ProductIn(Schema):
     )
     description: text(0, 500) = ""  # type: ignore[valid-type]
     barcode: str | None = Field(default=None, pattern=r"^\d{8,14}$")
-    image_url: str = Field(default="", max_length=800_000)
+    # Fotoğraf zorunlu: ekip ürünü fotoğraftan doğrular. İçerik ve boyut
+    # router'da check_image ile denetlenir.
+    image_url: str = Field(min_length=1, max_length=800_000)
 
     @field_validator("category")
     @classmethod
@@ -211,7 +213,8 @@ class ProductOut(Schema):
     description: str
     barcode: str | None
     status: str
-    reject_reason: str | None = None
+    duplicate_of: str | None = None
+    edited_by_team: bool = False
     added_by: str | None = None
     approved_at: str | None = None
     created_at: str | None = None
@@ -222,8 +225,8 @@ class ProductPage(Schema):
     total: int
 
 
-class RejectIn(Schema):
-    reason: text(3, 300)  # type: ignore[valid-type]
+class DuplicateIn(Schema):
+    original_id: str = Field(min_length=1, max_length=64)
 
 
 # ── Yorumlar ─────────────────────────────────────────────────────────

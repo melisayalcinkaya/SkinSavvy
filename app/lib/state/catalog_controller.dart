@@ -13,8 +13,15 @@ import 'user_store.dart';
 /// Ürün kataloğu: topluluğun eklediği, ekibin onayladığı ürünler.
 ///
 /// Akış (iki modda aynı): kullanıcı aradığı ürünü bulamazsa önerir → ürün
-/// "onay bekliyor" olur ve yalnızca öneren görür → ekip (yönetici) onaylarsa
-/// herkese açılır, reddederse gerekçesi önerene gösterilir.
+/// "onay bekliyor" olur ve yalnızca öneren görür → ekip (yönetici):
+///
+/// - **onaylar** (eksik/hatalı bilgiyi gerekirse kendisi düzeltip): ürün
+///   herkese açılır;
+/// - **yinelenen** olarak işaretler: öneri katalogdaki asıl ürüne bağlanır,
+///   önerenin dolabındaki kayıt da asıl ürüne taşınır;
+/// - **siler** (spam/sahte): öneri katalogdan ve önerenin dolabından kalkar.
+///
+/// Reddetme yoktur; her kararda önerene bildirim gider.
 ///
 /// - **Cihaz modu:** öneriler cihazdaki bütün hesapların ortak listesinde
 ///   ([communityKey]) tutulur; demo hesabı yönetici yetkisine sahiptir.
@@ -89,13 +96,17 @@ class CatalogController extends UserStore {
     return isRemote ? list : [for (final p in list) _withRating(p)];
   }
 
-  /// Kullanıcının önerileri; reddedilenler gerekçesiyle birlikte.
+  /// Kullanıcının bütün önerileri (bekleyen, onaylanan, yinelenen, silinen).
   List<Product> get submissions => isRemote
       ? List.unmodifiable(_remoteSubmissions)
       : [
           for (final p in _community)
             if (uid != null && p.submittedBy == uid) p,
         ];
+
+  /// Kullanıcının kataloğa kazandırdığı ürün sayısı (onaylı + bekleyen;
+  /// yinelenen ve silinen öneriler sayılmaz).
+  int get contributionCount => submissions.where((p) => p.isLive).length;
 
   /// Yöneticinin onay kuyruğu (en eski önce).
   List<Product> get reviewQueue {
@@ -149,10 +160,16 @@ class CatalogController extends UserStore {
 
   // ── Sunucudan yükleme ───────────────────────────────────────
 
-  /// Sunucudan katalog, öneri durumları ve (yöneticiyse) onay kuyruğunu çeker.
+  /// Katalog, öneri durumları ve (yöneticiyse) onay kuyruğunu yeniden yükler.
+  /// Cihaz modunda ortak topluluk listesi yeniden okunur (aynı cihazdaki başka
+  /// bir hesabın verdiği kararlar görünsün).
   Future<void> reload() async {
     final client = api;
-    if (client == null) return;
+    if (client == null) {
+      _community = _readCommunity();
+      _notify();
+      return;
+    }
     _loading = true;
     _error = null;
     _notify();
@@ -211,24 +228,34 @@ class CatalogController extends UserStore {
   // ── Öneri ───────────────────────────────────────────────────
 
   /// Aynı ad ve markada (ya da aynı barkodla) ürün var mı? Büyük/küçük harf ve
-  /// Türkçe karakter duyarsız. Reddedilenler sayılmaz. Sunucu da aynı kontrolü
+  /// Türkçe karakter duyarsız. Yalnızca onaylı ve bekleyen ürünler sayılır;
+  /// [ignoreId] (düzenlenen ürünün kendisi) atlanır. Sunucu da aynı kontrolü
   /// yapar; bu yalnızca kullanıcıyı erken uyarır.
-  Product? findDuplicate(String name, String brand, {String? barcode}) {
+  Product? findDuplicate(
+    String name,
+    String brand, {
+    String? barcode,
+    String? ignoreId,
+  }) {
     final n = searchKey(name);
     final b = searchKey(brand);
     final code = barcode?.trim() ?? '';
-    final pool = [...products, if (!isRemote) ..._community];
+    final pool = [
+      ...products,
+      if (!isRemote) ..._community,
+      if (isRemote) ..._remoteQueue,
+    ];
     for (final p in pool) {
-      if (p.isRejected) continue;
+      if (!p.isLive || p.id == ignoreId) continue;
       if (searchKey(p.name) == n && searchKey(p.brand) == b) return p;
       if (code.isNotEmpty && p.barcode == code) return p;
     }
     return null;
   }
 
-  /// Ürünü ekip onayına gönderir. [replacing] reddedilmiş bir önerinin
-  /// düzeltilmiş hâliyse eskisi listeden kalkar. Sunucu modunda hata olursa
-  /// [ApiException] fırlatır (ör. 409: ürün zaten var).
+  /// Ürünü ekip onayına gönderir. Fotoğraf zorunludur ([imageUrl], data URL).
+  /// Sunucu modunda hata olursa [ApiException] fırlatır (ör. 409: ürün zaten
+  /// var).
   Future<Product> submit({
     required String name,
     required String brand,
@@ -237,10 +264,10 @@ class CatalogController extends UserStore {
     required List<String> ingredients,
     String description = '',
     String? barcode,
-    String imageUrl = '',
+    required String imageUrl,
     String? submitterName,
-    String? replacing,
   }) async {
+    if (imageUrl.isEmpty) throw ArgumentError('Ürün fotoğrafı zorunlu.');
     final client = api;
     final cleanBarcode = barcode == null || barcode.isEmpty ? null : barcode;
     if (client != null) {
@@ -258,10 +285,7 @@ class CatalogController extends UserStore {
           }),
         ),
       );
-      _remoteSubmissions = [
-        product,
-        ..._remoteSubmissions.where((p) => p.id != replacing),
-      ];
+      _remoteSubmissions = [product, ..._remoteSubmissions];
       _notify();
       return product;
     }
@@ -280,58 +304,139 @@ class CatalogController extends UserStore {
       addedBy: submitterName,
       createdAt: DateTime.now().toIso8601String(),
     );
-    _community = [
-      product,
-      ..._community.where((p) => !(p.id == replacing && p.isRejected)),
-    ];
+    _community = [product, ..._community];
     _saveCommunity();
     return product;
   }
 
-  // ── Ekip onayı ──────────────────────────────────────────────
+  // ── Ekip kararları ──────────────────────────────────────────
 
-  /// Öneriyi onaylar; ürün herkese açılır.
-  Future<void> approve(String productId) => _decide(productId, approve: true);
-
-  /// Öneriyi gerekçeyle reddeder; gerekçe yalnızca önerene görünür.
-  Future<void> reject(String productId, String reason) =>
-      _decide(productId, approve: false, reason: reason);
-
-  Future<void> _decide(
-    String productId, {
-    required bool approve,
-    String? reason,
-  }) async {
-    if (!isAdmin) throw StateError('Yalnızca yönetici karar verebilir.');
+  /// Öneriyi onaylar; ürün herkese açılır. [edited] verilirse ekip ürünün
+  /// bilgilerini (ad, marka, kategori, cilt tipi, içerik, açıklama, barkod,
+  /// fotoğraf) düzeltmiştir; öneren "ekip düzenledi" notuyla bilgilendirilir.
+  Future<void> approve(String productId, {Product? edited}) async {
+    final pending = _requirePending(productId);
     final client = api;
     if (client != null) {
-      final id = Uri.encodeComponent(productId);
       await client.post(
-        '/admin/submissions/$id/${approve ? 'approve' : 'reject'}',
-        approve ? null : {'reason': reason},
+        '/admin/submissions/${Uri.encodeComponent(productId)}/approve',
+        edited == null ? null : _editBody(edited),
       );
       await reload();
       return;
     }
-    _community = [
-      for (final p in _community)
-        if (p.id == productId && p.isPending)
-          approve
-              ? p.copyWith(
-                  status: ProductStatus.approved,
-                  approvedAt: dateKey(DateTime.now()),
-                  clearRejectReason: true,
-                )
-              : p.copyWith(status: ProductStatus.rejected, rejectReason: reason)
-        else
-          p,
-    ];
+    if (edited != null) {
+      final dup = findDuplicate(
+        edited.name,
+        edited.brand,
+        barcode: edited.barcode,
+        ignoreId: productId,
+      );
+      if (dup != null) {
+        throw StateError('"${dup.brand} ${dup.name}" zaten katalogda.');
+      }
+    }
+    final base = edited == null
+        ? pending
+        : pending.copyWith(
+            name: sanitizeInput(edited.name),
+            brand: sanitizeInput(edited.brand),
+            category: edited.category,
+            skinTypes: edited.skinTypes,
+            ingredients: edited.ingredients,
+            description: sanitizeInput(edited.description),
+            barcode: edited.barcode,
+            clearBarcode: edited.barcode == null,
+            imageUrl: edited.imageUrl,
+            editedByTeam: true,
+          );
+    _replace(
+      base.copyWith(
+        status: ProductStatus.approved,
+        approvedAt: dateKey(DateTime.now()),
+      ),
+    );
+  }
+
+  /// Öneri katalogdaki [originalId] ürünüyle aynı: öneri yinelenen olarak
+  /// işaretlenir, önerenin dolabındaki kayıt asıl ürüne bağlanır.
+  Future<void> markDuplicate(String productId, String originalId) async {
+    final pending = _requirePending(productId);
+    final original = byId(originalId);
+    if (originalId == productId || original == null || !original.isApproved) {
+      throw StateError('Asıl ürün onaylı bir katalog ürünü olmalı.');
+    }
+    final client = api;
+    if (client != null) {
+      await client.post(
+        '/admin/submissions/${Uri.encodeComponent(productId)}/duplicate',
+        {'originalId': originalId},
+      );
+      await reload();
+      return;
+    }
+    _replace(
+      pending.copyWith(
+        status: ProductStatus.duplicate,
+        duplicateOf: originalId,
+      ),
+    );
+  }
+
+  /// Spam/sahte öneriyi siler: katalogda hiç görünmez, önerenin dolabından
+  /// da kalkar.
+  Future<void> remove(String productId) async {
+    final pending = _requirePending(productId);
+    final client = api;
+    if (client != null) {
+      await client.post(
+        '/admin/submissions/${Uri.encodeComponent(productId)}/remove',
+        null,
+      );
+      await reload();
+      return;
+    }
+    // Fotoğraf ve içerik gibi kullanıcı verisi saklanmaz; bildirim için
+    // yalnızca ad, marka ve öneren kalır.
+    _replace(
+      Product(
+        id: pending.id,
+        name: pending.name,
+        brand: pending.brand,
+        category: pending.category,
+        status: ProductStatus.removed,
+        submittedBy: pending.submittedBy,
+        createdAt: pending.createdAt,
+      ),
+    );
+  }
+
+  Product _requirePending(String productId) {
+    if (!isAdmin) throw StateError('Yalnızca yönetici karar verebilir.');
+    final p = reviewQueue.where((p) => p.id == productId).firstOrNull;
+    if (p == null) throw StateError('Bu öneri artık onay beklemiyor.');
+    return p;
+  }
+
+  void _replace(Product updated) {
+    _community = [for (final p in _community) p.id == updated.id ? updated : p];
     _saveCommunity();
   }
 
+  static Map<String, Object?> _editBody(Product e) => {
+    'name': sanitizeInput(e.name),
+    'brand': sanitizeInput(e.brand),
+    'category': e.category,
+    'skinTypes': e.skinTypes,
+    'ingredients': e.ingredients,
+    'description': sanitizeInput(e.description),
+    'barcode': e.barcode,
+    'imageUrl': e.imageUrl,
+  };
+
   // ── Karar bildirimleri ──────────────────────────────────────
 
-  /// Kullanıcının henüz görmediği onay/ret kararları.
+  /// Kullanıcının henüz görmediği ekip kararları.
   List<Product> get unseenDecisions => [
     for (final p in submissions)
       if (!p.isPending && !_seen.contains(_decisionKey(p))) p,

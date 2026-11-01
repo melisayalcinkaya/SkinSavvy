@@ -22,9 +22,12 @@ class Role(enum.StrEnum):
 
 
 class ProductStatus(enum.StrEnum):
+    # Reddetme yok: ekip eksik bilgiyi düzeltip onaylar, aynısı varsa asıl
+    # ürüne bağlar (duplicate) ya da spam/sahte öneriyi siler (removed).
     approved = "approved"
     pending = "pending"
-    rejected = "rejected"
+    duplicate = "duplicate"
+    removed = "removed"
 
 
 class User(Base):
@@ -93,7 +96,10 @@ class Product(Base):
     submitted_by: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), index=True, default=None
     )
-    reject_reason: Mapped[str | None] = mapped_column(String(300), default=None)
+    # Yinelenen öneride katalogdaki asıl ürün.
+    duplicate_of: Mapped[str | None] = mapped_column(ForeignKey("products.id", ondelete="SET NULL"), default=None)
+    # Ekip onaylamadan önce bilgileri düzeltti mi (önerene bildirilir)?
+    edited_by_team: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     reviewed_at: Mapped[datetime | None] = mapped_column(default=None)
 

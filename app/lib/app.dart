@@ -8,6 +8,7 @@ import 'data/local/local_store.dart';
 import 'data/remote/api_client.dart';
 import 'router.dart';
 import 'state/catalog_controller.dart';
+import 'state/decision_sync.dart';
 import 'state/review_controller.dart';
 import 'state/routine_controller.dart';
 import 'state/session_controller.dart';
@@ -103,6 +104,26 @@ class _SkinSavvyAppState extends State<SkinSavvyApp> {
                   isAdmin: session.user?.isAdmin ?? false,
                   reviews: reviews,
                 ),
+        ),
+        // Ekip kararlarını önerenin dolabına ve yorumlarına yansıtır.
+        ProxyProvider3<
+          CatalogController,
+          ShelfController,
+          ReviewController,
+          DecisionSync
+        >(
+          lazy: false,
+          update: (_, catalog, shelf, reviews, previous) {
+            if (previous != null &&
+                identical(previous.catalog, catalog) &&
+                identical(previous.shelf, shelf) &&
+                identical(previous.reviews, reviews)) {
+              return previous;
+            }
+            previous?.dispose();
+            return DecisionSync(catalog, shelf, reviews);
+          },
+          dispose: (_, sync) => sync.dispose(),
         ),
         ChangeNotifierProxyProvider2<
           SessionController,

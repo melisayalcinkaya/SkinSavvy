@@ -11,6 +11,7 @@ ADMIN = {"email": "admin@test.dev", "password": "Yonetici-sifre-77"}
 PNG_1PX = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 )
+PNG_URL = "data:image/png;base64," + base64.b64encode(PNG_1PX).decode()
 
 
 def make_settings(**overrides) -> Settings:
@@ -68,6 +69,7 @@ class Api:
             "skinTypes": ["Hassas Cilt"],
             "ingredients": ["Aqua", "Chamomilla Recutita Flower Water", "Glycerin"],
             "description": "Yatıştırıcı tonik.",
+            "imageUrl": PNG_URL,
             **overrides,
         }
         return self.c.post("/products", json=body, headers=headers)

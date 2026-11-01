@@ -72,6 +72,7 @@ class ShelfItem {
   };
 
   ShelfItem copyWith({
+    String? productId,
     String? name,
     String? brand,
     String? category,
@@ -94,7 +95,7 @@ class ShelfItem {
     List<String>? ingredients,
   }) => ShelfItem(
     id: id,
-    productId: productId,
+    productId: productId ?? this.productId,
     name: name ?? this.name,
     brand: brand ?? this.brand,
     category: category ?? this.category,

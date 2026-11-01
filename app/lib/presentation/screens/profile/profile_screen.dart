@@ -151,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statBadge('${shelf.owned.length}', 'Ürün'),
+              _statBadge('${shelf.using.length}', 'Kullanımda'),
               _divider(),
               _statBadge('$steps', 'Rutin Adımı'),
               _divider(),
@@ -188,6 +188,10 @@ class ProfileScreen extends StatelessWidget {
   Widget _statsCard(BuildContext context) {
     final routine = context.watch<RoutineController>();
     final shelf = context.watch<ShelfController>();
+    final added = context.select<CatalogController, int>(
+      (c) => c.contributionCount,
+    );
+    final reviewCount = context.select<ReviewController, int>((r) => r.count);
     final today = dateOnly(DateTime.now());
     final monthRate = routine.completionRate(
       DateTime(today.year, today.month),
@@ -245,6 +249,32 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          // Katkı: önerip kataloğa kazandırdıkları, kullandıkları (bitenler
+          // dahil) ve yazdığı yorumlar.
+          Row(
+            children: [
+              Expanded(
+                child: _miniBox('$added', 'Eklediğim', AppColors.primary),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniBox(
+                  '${shelf.owned.length}',
+                  'Kullandığım',
+                  AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _miniBox(
+                  '$reviewCount',
+                  'Yorumlarım',
+                  AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(

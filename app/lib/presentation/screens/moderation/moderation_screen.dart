@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../core/utils/text_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/user.dart';
 import '../../../data/remote/api_client.dart';
@@ -11,20 +12,17 @@ import '../../../state/catalog_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
-
-/// Ret gerekçesi için hazır seçenekler; kullanıcı kendi metnini de yazabilir.
-const rejectReasons = [
-  'İçerik listesi eksik ya da okunamıyor.',
-  'Bu ürün katalogda zaten var.',
-  'Fotoğraf ürünü göstermiyor.',
-  'Kozmetik / cilt bakım ürünü değil.',
-  'Ad veya marka hatalı yazılmış.',
-];
+import 'moderation_edit_screen.dart';
 
 /// SkinSavvy ekibinin (yönetici) onay kuyruğu.
 ///
-/// Kullanıcıların önerdiği ürünler burada incelenir: onaylanan ürün herkese
-/// açılır, reddedilenin gerekçesi önerene bildirim olarak gider.
+/// Kullanıcıların önerdiği ürünler burada incelenir. Reddetme yoktur; ekip
+/// her öneri için şu kararlardan birini verir ve önerene bildirim gider:
+///
+/// - **Onayla** ya da **Düzenle ve onayla**: eksik/hatalı bilgiyi ekip
+///   düzeltir, ürün herkese açılır;
+/// - **Yinelenen**: ürün katalogda zaten var; öneri asıl ürüne bağlanır;
+/// - **Sil**: spam/sahte öneri katalogdan ve önerenin dolabından kalkar.
 class ModerationScreen extends StatelessWidget {
   const ModerationScreen({super.key});
 
@@ -125,25 +123,97 @@ class _SubmissionCardState extends State<_SubmissionCard> {
       if (mounted) showAppSnack(context, done);
     } on ApiException catch (e) {
       if (mounted) showAppSnack(context, e.message, error: true);
+    } on StateError catch (e) {
+      if (mounted) showAppSnack(context, e.message, error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _reject() async {
-    final reason = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _RejectSheet(),
+  Future<void> _editAndApprove() async {
+    final edited = await Navigator.push<Product>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ModerationEditScreen(product: widget.p),
+      ),
     );
-    if (reason == null || !mounted) return;
+    if (edited == null || !mounted) return;
     final catalog = context.read<CatalogController>();
     await _run(
-      () => catalog.reject(widget.p.id, reason),
-      'Öneri reddedildi, gerekçe önerene iletildi',
+      () => catalog.approve(widget.p.id, edited: edited),
+      '"${edited.name}" düzeltilip onaylandı',
     );
   }
+
+  Future<void> _markDuplicate([Product? suggested]) async {
+    final original =
+        suggested ??
+        await showModalBottomSheet<Product>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => _DuplicatePicker(submission: widget.p),
+        );
+    if (original == null || !mounted) return;
+    final ok = await _confirm(
+      title: 'Yinelenen olarak işaretle',
+      body:
+          'Öneri "${original.brand} ${original.name}" ürününe bağlanacak. '
+          'Önerenin dolabındaki kayıt tarihleri ve notlarıyla birlikte asıl '
+          'ürüne taşınır.',
+      action: 'Asıl ürüne bağla',
+    );
+    if (!ok || !mounted) return;
+    final catalog = context.read<CatalogController>();
+    await _run(
+      () => catalog.markDuplicate(widget.p.id, original.id),
+      'Öneri "${original.name}" ürününe bağlandı',
+    );
+  }
+
+  Future<void> _remove() async {
+    final ok = await _confirm(
+      title: 'Spam/sahte olarak sil',
+      body:
+          'Öneri katalogdan ve önerenin dolabından kaldırılır; önerene '
+          'bildirim gider. Bu işlem geri alınamaz.',
+      action: 'Sil',
+      destructive: true,
+    );
+    if (!ok || !mounted) return;
+    final catalog = context.read<CatalogController>();
+    await _run(() => catalog.remove(widget.p.id), 'Öneri silindi');
+  }
+
+  Future<bool> _confirm({
+    required String title,
+    required String body,
+    required String action,
+    bool destructive = false,
+  }) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(title, style: const TextStyle(fontSize: 16)),
+          content: Text(body, style: const TextStyle(fontSize: 13)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Vazgeç'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              style: TextButton.styleFrom(
+                foregroundColor: destructive
+                    ? AppColors.accent
+                    : AppColors.primary,
+              ),
+              child: Text(action),
+            ),
+          ],
+        ),
+      ) ??
+      false;
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +224,7 @@ class _SubmissionCardState extends State<_SubmissionCard> {
       const SkinProfile(),
     );
     final created = DateTime.tryParse(p.createdAt ?? '');
+    final similar = similarProducts(context.watch<CatalogController>(), p);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -168,8 +239,8 @@ class _SubmissionCardState extends State<_SubmissionCard> {
             children: [
               ProductImage(
                 p.imageUrl,
-                width: 72,
-                height: 72,
+                width: 88,
+                height: 88,
                 category: p.category,
               ),
               const SizedBox(width: 12),
@@ -290,6 +361,13 @@ class _SubmissionCardState extends State<_SubmissionCard> {
             ),
           ),
           if (_showIngredients) AnalysisCard(analysis: analysis),
+          if (similar.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _SimilarHint(
+              product: similar.first,
+              onLink: _busy ? null : () => _markDuplicate(similar.first),
+            ),
+          ],
           const SizedBox(height: 12),
           if (_busy)
             const Center(
@@ -299,24 +377,10 @@ class _SubmissionCardState extends State<_SubmissionCard> {
               ),
             )
           else
-            Row(
+            Column(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _reject,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.accent,
-                      side: const BorderSide(color: AppColors.accent),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    icon: const Icon(Icons.close, size: 16),
-                    label: const Text('Reddet'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
+                SizedBox(
+                  width: double.infinity,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: AppGradients.primary,
@@ -340,43 +404,145 @@ class _SubmissionCardState extends State<_SubmissionCard> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _secondary('Düzenle', Icons.edit_outlined, _editAndApprove),
+                    const SizedBox(width: 6),
+                    _secondary('Yinelenen', Icons.link_rounded, _markDuplicate),
+                    const SizedBox(width: 6),
+                    _secondary(
+                      'Sil',
+                      Icons.delete_outline_rounded,
+                      _remove,
+                      color: AppColors.accent,
+                    ),
+                  ],
+                ),
               ],
             ),
         ],
       ),
     );
   }
+
+  Widget _secondary(
+    String label,
+    IconData icon,
+    VoidCallback onPressed, {
+    Color color = AppColors.primary,
+  }) => Expanded(
+    child: OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: color,
+        side: BorderSide(color: color.withValues(alpha: 0.6)),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15),
+            const SizedBox(width: 4),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
-class _RejectSheet extends StatefulWidget {
-  const _RejectSheet();
+/// Katalogda öneriye benzeyen onaylı ürünler (aynı marka, adı birbirini
+/// içeren ya da aynı barkod), en olası önce. Ekibe yinelenen öneriyi
+/// yakalamada ipucu verir; karar yine ekibindir.
+List<Product> similarProducts(CatalogController catalog, Product p) {
+  final name = searchKey(p.name);
+  final brand = searchKey(p.brand);
+  final scored = <(int, Product)>[];
+  for (final c in catalog.products) {
+    if (!c.isApproved || c.id == p.id) continue;
+    var score = 0;
+    if (p.barcode != null && c.barcode == p.barcode) score += 4;
+    if (searchKey(c.brand) == brand) score += 2;
+    final other = searchKey(c.name);
+    if (other == name) {
+      score += 3;
+    } else if (other.contains(name) || name.contains(other)) {
+      score += 1;
+    }
+    if (score >= 3) scored.add((score, c));
+  }
+  scored.sort((a, b) => b.$1.compareTo(a.$1));
+  return [for (final (_, c) in scored) c];
+}
+
+class _SimilarHint extends StatelessWidget {
+  const _SimilarHint({required this.product, required this.onLink});
+
+  final Product product;
+  final VoidCallback? onLink;
 
   @override
-  State<_RejectSheet> createState() => _RejectSheetState();
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFF3E3),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.info_outline, size: 15, color: Color(0xFFB4651F)),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            'Katalogda benzer ürün var: ${product.brand} ${product.name}',
+            style: const TextStyle(fontSize: 11, color: AppColors.textDark),
+          ),
+        ),
+        TextButton(onPressed: onLink, child: const Text('Bağla')),
+      ],
+    ),
+  );
 }
 
-class _RejectSheetState extends State<_RejectSheet> {
-  String? _choice = rejectReasons.first;
-  final _custom = TextEditingController();
+/// Yinelenen öneri için asıl ürünü seçtirir (aranabilir onaylı ürün listesi).
+class _DuplicatePicker extends StatefulWidget {
+  const _DuplicatePicker({required this.submission});
+
+  final Product submission;
+
+  @override
+  State<_DuplicatePicker> createState() => _DuplicatePickerState();
+}
+
+class _DuplicatePickerState extends State<_DuplicatePicker> {
+  late final _query = TextEditingController(text: widget.submission.brand);
 
   @override
   void dispose() {
-    _custom.dispose();
+    _query.dispose();
     super.dispose();
-  }
-
-  String? get _reason {
-    final text = _custom.text.trim();
-    if (_choice == null) return text.length >= 3 ? text : null;
-    return text.isEmpty ? _choice : '$_choice $text';
   }
 
   @override
   Widget build(BuildContext context) {
+    final catalog = context.watch<CatalogController>();
+    final similar = similarProducts(catalog, widget.submission);
+    final found = [
+      ...similar,
+      for (final c in catalog.search(query: _query.text))
+        if (c.isApproved && !similar.any((s) => s.id == c.id)) c,
+    ];
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+        ),
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -388,7 +554,7 @@ class _RejectSheetState extends State<_RejectSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Neden reddediyorsun?',
+                'Asıl ürünü seç',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
@@ -396,56 +562,61 @@ class _RejectSheetState extends State<_RejectSheet> {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Gerekçe yalnızca ürünü önerene gösterilir; düzeltip yeniden gönderebilir.',
-                style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+              Text(
+                '"${widget.submission.name}" önerisi seçtiğin ürüne bağlanacak.',
+                style: const TextStyle(fontSize: 11, color: AppColors.textGrey),
               ),
-              const SizedBox(height: 8),
-              RadioGroup<String?>(
-                groupValue: _choice,
-                onChanged: (v) => setState(() => _choice = v),
-                child: Column(
-                  children: [
-                    for (final r in [...rejectReasons, null])
-                      RadioListTile<String?>(
-                        value: r,
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        activeColor: AppColors.primary,
-                        title: Text(
-                          r ?? 'Başka bir neden (aşağıya yaz)',
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+              const SizedBox(height: 10),
               TextField(
-                controller: _custom,
-                maxLength: 200,
-                maxLines: 2,
+                controller: _query,
                 onChanged: (_) => setState(() {}),
                 decoration: const InputDecoration(
-                  hintText: 'Not ekle (isteğe bağlı)',
+                  hintText: 'Ürün adı, marka ya da barkod',
+                  prefixIcon: Icon(Icons.search, size: 20),
                   isDense: true,
                 ),
               ),
               const SizedBox(height: 6),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _reason == null
-                      ? null
-                      : () => Navigator.pop(context, _reason),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Reddet ve bildir'),
-                ),
+              Flexible(
+                child: found.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'Eşleşen onaylı ürün yok.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                      )
+                    : ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (final c in found)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: ProductImage(
+                                c.imageUrl,
+                                width: 40,
+                                height: 40,
+                                category: c.category,
+                              ),
+                              title: Text(
+                                c.name,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              subtitle: Text(
+                                [
+                                  c.brand,
+                                  if (similar.any((s) => s.id == c.id))
+                                    'benzer',
+                                ].join(' · '),
+                                style: const TextStyle(fontSize: 11),
+                              ),
+                              onTap: () => Navigator.pop(context, c),
+                            ),
+                        ],
+                      ),
               ),
             ],
           ),

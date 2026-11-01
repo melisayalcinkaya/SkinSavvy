@@ -204,30 +204,65 @@ void main() {
       category: 'Tonik',
       status: ProductStatus.approved,
     );
-    const rejected = Product(
+    const duplicate = Product(
       id: 'p2',
       name: 'Gül Suyu',
       brand: 'Bahçe',
       category: 'Tonik',
-      status: ProductStatus.rejected,
-      rejectReason: 'İçerik listesi eksik.',
+      status: ProductStatus.duplicate,
+      duplicateOf: 'p-asil',
+    );
+    const removed = Product(
+      id: 'p3',
+      name: 'Sahte Krem',
+      brand: 'X',
+      category: 'Krem',
+      status: ProductStatus.removed,
+    );
+    const original = Product(
+      id: 'p-asil',
+      name: 'Gül Suyu Tonik',
+      brand: 'Bahçe',
+      category: 'Tonik',
     );
 
-    test('onay ve ret önerene bildirilir; ret acil sayılır', () {
+    List<Reminder> decide(List<Product> decisions) => buildReminders(
+      items: const [],
+      settings: const AppSettings(),
+      now: today,
+      decisions: decisions,
+      lookup: (id) => id == original.id ? original : null,
+    );
+
+    test('her karar önerene bildirilir; hiçbiri acil sayılmaz', () {
+      final r = decide(const [approved, duplicate, removed]);
+      expect(r.map((x) => x.kind), [
+        ReminderKind.submissionApproved,
+        ReminderKind.submissionDuplicate,
+        ReminderKind.submissionRemoved,
+      ]);
+      expect(r.every((x) => !x.urgent), isTrue);
+      expect(r.map((x) => x.productId), ['p1', 'p2', 'p3']);
+      expect(r[1].detail, contains('"Bahçe Gül Suyu Tonik"'));
+      expect(r[2].detail, contains('dolabından da kaldırıldı'));
+      // Reddetme yok: "yeniden gönder" gibi bir yönlendirme de yok.
+      expect(r.any((x) => x.detail.contains('yeniden')), isFalse);
+    });
+
+    test('ekip düzelttiyse onay bildiriminde belirtilir', () {
+      final edited = approved.copyWith(editedByTeam: true);
+      expect(decide([edited]).single.detail, contains('Ekip bazı bilgilerini'));
+      expect(decide(const [approved]).single.detail, isNot(contains('Ekip')));
+    });
+
+    test('asıl ürün bulunamazsa genel metin gösterilir', () {
       final r = buildReminders(
         items: const [],
         settings: const AppSettings(),
         now: today,
-        decisions: const [approved, rejected],
+        decisions: const [duplicate],
       );
-      expect(r.map((x) => x.kind), [
-        ReminderKind.submissionRejected,
-        ReminderKind.submissionApproved,
-      ]);
-      expect(r.first.detail, contains('İçerik listesi eksik.'));
-      expect(r.first.urgent, isTrue);
-      expect(r.last.urgent, isFalse);
-      expect(r.first.productId, 'p2');
+      expect(r.single.detail, contains('katalogda zaten var'));
     });
 
     test('"Ürün onaylandı" bildirimi kapatılabilir', () {

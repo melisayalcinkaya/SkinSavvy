@@ -51,15 +51,24 @@ kullanıcı fark etmeden önce gösterir.
   yaklaşan (gün sayısı ayarlanabilir), azalan ürünler ve saati geçmiş rutinler
   zil simgesinde rozetle görünür.
 - **Ürün dolabı:** kullanılanlar, alınacaklar, bitenler; kalan miktar, puan, not,
-  "tekrar alır mıyım", bitenleri paylaşma.
+  "tekrar alır mıyım", bitenleri **memnun kaldıklarım / kalmadıklarım** diye süzme
+  ve paylaşma. Profilde eklediğim, kullandığım ürün ve yorum sayıları.
 - **Topluluk ürün veritabanı:** Ücretli ve kapsamlı bir kozmetik API'si olmadığı
-  için ürünleri kullanıcılar ekler (fotoğraf, içerik listesi, barkod, cilt tipleri).
-  Öneri, ekip onaylayana kadar yalnızca ekleyene görünür; aynı ad/marka ya da barkod
-  ikinci kez eklenemez. Ekip, uygulama içindeki **onay kuyruğundan** fotoğrafı,
-  bilgileri ve kaç içeriğin tanındığını görüp onaylar ya da hazır/özel bir gerekçeyle
-  reddeder. Ekleyen kişiye sonuç zil simgesinden bildirilir; reddedilen öneri
-  düzeltilip yeniden gönderilebilir. Ürün sayfasında "Ekleyen: Zeynep K." yazar,
-  yeni onaylananlar "Yeni" etiketi alır.
+  için ürünleri kullanıcılar ekler (zorunlu fotoğraf, içerik listesi, barkod, cilt
+  tipleri). Öneri, ekip karar verene kadar yalnızca ekleyene görünür; aynı ad/marka
+  ya da barkod ikinci kez eklenemez. **Reddetme yoktur**: kullanıcıya "düzelt, yeniden
+  gönder" yükü bindirilmez. Ekip, uygulama içindeki **onay kuyruğunda** fotoğrafı,
+  bilgileri, kaç içeriğin tanındığını ve katalogdaki benzer ürünleri görüp şu
+  kararlardan birini verir:
+
+  | Karar | Ne olur |
+  |---|---|
+  | **Onayla** / **Düzenle ve onayla** | Eksik ya da hatalı bilgiyi (ad, marka, kategori, cilt tipi, içerik, barkod, fotoğraf) ekip düzeltir; ürün herkese açılır, ekleyenin dolabındaki kayıt da güncellenir. |
+  | **Yinelenen** | Ürün katalogda zaten var: öneri asıl ürüne bağlanır, ekleyenin dolap kaydı tarihleri, notu ve yorumuyla birlikte asıl ürüne taşınır. |
+  | **Sil** (spam/sahte) | Öneri katalogdan ve ekleyenin dolabından kalkar; fotoğrafı ve içeriği saklanmaz. |
+
+  Her kararda ekleyene zil simgesinden bildirim gider. Ürün sayfasında
+  "Ekleyen: Zeynep K." yazar, yeni onaylananlar "Yeni" etiketi alır.
 - **Yorumlar:** ürün başına tek yorum (ikincisi günceller). Puanlar yalnızca gerçek
   yorumlardan hesaplanır; yorumu olmayan ürün "Henüz değerlendirme yok" der. Fiyat,
   "çok satan" gibi mağaza ögeleri yok.
@@ -100,8 +109,10 @@ sunucuya gider. Dolap, rutin ve tamamlama kaydı iki modda da cihazda kalır
   (sahte argon2 doğrulaması) → hesap varlığı sızmaz.
 - Hız sınırı: girişte IP ve hesap başına, kayıtta IP başına, öneri ve yorumda
   kullanıcı başına. `X-Forwarded-For` yalnızca ters vekil arkasında güvenilir.
-- Başkasının bekleyen önerisi **404** döner (varlığı da sızmaz); reddetme gerekçesi
-  yalnızca sahibine. Yorumlarda e-posta yok, ad "Ayşe Y." biçiminde.
+- Başkasının bekleyen önerisi **404** döner (varlığı da sızmaz); "ekip düzenledi" ve
+  "yinelenen" bilgisi yalnızca sahibine. Ekip kararları yalnızca yönetici rolüyle;
+  düzeltilen bilgi de öneriyle aynı doğrulamadan (görsel imzası, yinelenen kontrolü)
+  geçer. Yorumlarda e-posta yok, ad "Ayşe Y." biçiminde.
 - Görseller uzantıya değil **dosya imzasına** göre (gerçekten PNG/JPEG mi) ve boyuta
   göre doğrulanır; SVG ve uzak adres kabul edilmez. Metinlerde kontrol karakterleri
   ve `<`/`>` temizlenir; bilinmeyen alanlar 422.
@@ -162,8 +173,8 @@ cd app && dart run tool/export_demo_catalog.dart
 
 | | Kapsam |
 |---|---|
-| **Uygulama** (`flutter test`) | içerik eşleştirme ve analiz kuralları, rutin danışmanı, hatırlatmalar (PAO / SKT, ay sonu taşması), kalıcılık ve kullanıcı ayrımı, kimlik doğrulama, sahte sunucuyla sunucu modu (token yenileme, çevrimdışı yorum kuyruğu, yarış durumu), demo / kayıt / karşılama akışları, **320 px, 390 px ve 1280 px'te bütün ana ekranlarda taşma taraması** |
-| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay/ret, yorumlardan hesaplanan puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
+| **Uygulama** (`flutter test`) | içerik eşleştirme ve analiz kuralları, rutin danışmanı, hatırlatmalar (PAO / SKT, ay sonu taşması), ekip kararlarının dolaba ve yorumlara yansıması, kalıcılık ve kullanıcı ayrımı, kimlik doğrulama, sahte sunucuyla sunucu modu (token yenileme, çevrimdışı yorum kuyruğu, yarış durumu), demo / kayıt / karşılama / öneri-onay-yinelenen-silme akışları, **320 px, 390 px ve 1280 px'te bütün ana ekranlarda taşma taraması** |
+| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay / düzeltip onay / yinelenen / silme kararları, yorumlardan hesaplanan puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
 
 CI her gönderimde: `dart format`, `flutter analyze`, testler, web derlemesi; `ruff`,
 `pytest --cov`, Docker imajı + duman testi; ikisi de geçerse GitHub Pages'e yayın.
@@ -182,6 +193,20 @@ CI her gönderimde: `dart format`, `flutter analyze`, testler, web derlemesi; `r
 - Fotoğraftan cilt analizi bilerek yapılmadı: tıbbi iddia riski ve farklı ten
   renklerinde güvenilmez sonuç.
 
+## Yol haritası: yapay zekâ ile moderasyon
+
+Topluluk veritabanı büyüdükçe onay kuyruğunu tek tek incelemek zorlaşır. Kararı yine
+ekip verecek şekilde, ekibe öneri sunan adımlar planlanıyor:
+
+- **İçerik doğrulama:** fotoğraftaki ambalajdan içerik listesini (OCR) okuyup
+  kullanıcının yazdığıyla karşılaştırmak; eksik ya da hatalı maddeleri işaretlemek.
+- **Fotoğraf kalite kontrolü:** bulanık, karanlık ya da ürün olmayan fotoğrafları
+  gönderimden önce kullanıcıya bildirmek.
+- **Yinelenen tespitini otomatikleştirmek:** bugünkü ad/marka/barkod benzerliğinin
+  yerine görsel ve metin benzerliğiyle olası asıl ürünü güven puanıyla önermek.
+- **Kişisel öneriler:** cilt profili, dolap geçmişi ve "memnun kaldıklarım"
+  listesinden yola çıkarak benzer içerikli ürünler önermek (tıbbi iddia olmadan).
+
 ## Proje geçmişi
 
 Arayüz tasarımı ve ilk Flutter ekranları (25'ten fazla ekran, sabit verili prototip) Temmuz
@@ -197,8 +222,13 @@ FastAPI backend. It analyses a product's INCI list against the user's skin profi
 helpful actives), flags routine conflicts such as a retinoid and an acid on the same
 evening (only on the weekdays they overlap), and reminds users when an opened
 product passes its period-after-opening or printed expiry date. It sells nothing: the
-catalog is a community database built from user submissions that the team approves
-in an in-app review queue, and ratings come only from real reviews. The backend
+catalog is a community database built from user submissions (a photo is required).
+There is no "reject": in an in-app review queue the team approves a submission
+(optionally fixing its details first), links it to the existing product as a
+duplicate (the submitter's shelf entry, dates and review move with it), or deletes
+spam; the submitter is notified either way. Ratings come only from real reviews.
+The roadmap adds AI assistance for the review queue (OCR ingredient checks, photo
+quality checks, duplicate detection) and personal recommendations. The backend
 provides accounts with argon2 and rotating refresh tokens (reuse detection revokes
 the login family), the moderated catalog and reviews. The app runs
 fully on-device by default (the GitHub Pages demo) or against the API with

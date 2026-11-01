@@ -25,19 +25,23 @@ class Review {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-  Review copyWith({int? rating, String? comment, DateTime? updatedAt}) =>
-      Review(
-        id: id,
-        productId: productId,
-        shelfItemId: shelfItemId,
-        productName: productName,
-        brand: brand,
-        imageUrl: imageUrl,
-        rating: rating ?? this.rating,
-        comment: comment ?? this.comment,
-        createdAt: createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-      );
+  Review copyWith({
+    String? productId,
+    int? rating,
+    String? comment,
+    DateTime? updatedAt,
+  }) => Review(
+    id: id,
+    productId: productId ?? this.productId,
+    shelfItemId: shelfItemId,
+    productName: productName,
+    brand: brand,
+    imageUrl: imageUrl,
+    rating: rating ?? this.rating,
+    comment: comment ?? this.comment,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
 
   Map<String, dynamic> toJson() => {
     'id': id,

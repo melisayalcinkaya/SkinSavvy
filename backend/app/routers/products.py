@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import selectinload
 
 from ..deps import CurrentUser, DbDep, LimiterDep, OptionalUser, SettingsDep
@@ -13,12 +13,30 @@ from ..services import product_out, public_name, rating_stats, review_out
 
 router = APIRouter(prefix="/products", tags=["Ürünler"])
 
+LIVE = (ProductStatus.approved, ProductStatus.pending)
+
+
+def find_duplicate(db, name_key: str, brand_key: str, barcode: str | None, ignore_id: str | None = None):
+    """Aynı ad+marka ya da aynı barkodla onaylı/bekleyen ürün (varsa)."""
+    same = and_(Product.name_key == name_key, Product.brand_key == brand_key)
+    if barcode:
+        same = or_(same, Product.barcode == barcode)
+    stmt = select(Product).where(same, Product.status.in_(LIVE))
+    if ignore_id is not None:
+        stmt = stmt.where(Product.id != ignore_id)
+    return db.scalars(stmt.limit(1)).first()
+
 
 def _visible(user: User | None):
-    """Onaylı ürünler herkese; bekleyen ya da reddedilen yalnızca ekleyene."""
+    """Onaylı ürünler herkese; bekleyen öneri yalnızca ekleyene.
+
+    Yinelenen ya da silinen öneriler katalogda görünmez; öneren kararı
+    /products/mine üzerinden öğrenir.
+    """
+    approved = Product.status == ProductStatus.approved
     if user is None:
-        return Product.status == ProductStatus.approved
-    return or_(Product.status == ProductStatus.approved, Product.submitted_by == user.id)
+        return approved
+    return or_(approved, and_(Product.status == ProductStatus.pending, Product.submitted_by == user.id))
 
 
 def _get_visible(db, product_id: str, user: User | None) -> Product:
@@ -77,14 +95,7 @@ def submit_product(
     except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
     name_key, brand_key = search_key(body.name), search_key(body.brand)
-    duplicate = db.scalar(
-        select(Product).where(
-            Product.name_key == name_key,
-            Product.brand_key == brand_key,
-            Product.status != ProductStatus.rejected,
-        )
-    )
-    if duplicate is not None:
+    if find_duplicate(db, name_key, brand_key, body.barcode) is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Bu ürün zaten katalogda ya da onay bekliyor.")
     p = Product(
         name=body.name,

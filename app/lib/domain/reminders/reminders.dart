@@ -39,8 +39,9 @@ ExpiryInfo? expiryInfo(ShelfItem item) {
 enum ReminderKind {
   expired,
   expiresSoon,
-  submissionRejected,
   submissionApproved,
+  submissionDuplicate,
+  submissionRemoved,
   reviewQueue,
   routineDue,
   lowStock,
@@ -69,9 +70,7 @@ class Reminder {
 
   /// Kullanıcıyı harekete geçirmesi gereken (rozet sayısına giren) türler.
   bool get urgent =>
-      kind == ReminderKind.expired ||
-      kind == ReminderKind.expiresSoon ||
-      kind == ReminderKind.submissionRejected;
+      kind == ReminderKind.expired || kind == ReminderKind.expiresSoon;
 
   /// Aynı hatırlatmanın kimliği (liste anahtarı ve testler için).
   String get key =>
@@ -90,6 +89,7 @@ List<Reminder> buildReminders({
   required DateTime now,
   List<SlotProgress> routine = const [],
   List<Product> decisions = const [],
+  Product? Function(String id)? lookup,
   int reviewQueue = 0,
 }) {
   final today = dateOnly(now);
@@ -150,28 +150,43 @@ List<Reminder> buildReminders({
   // Önerilen ürünler için ekibin kararı (kullanıcı henüz görmediyse).
   if (settings.productApproval) {
     for (final p in decisions) {
-      if (p.isRejected) {
-        result.add(
-          Reminder(
-            kind: ReminderKind.submissionRejected,
-            title: '${p.name} onaylanmadı',
-            detail: p.rejectReason == null || p.rejectReason!.isEmpty
-                ? 'Önerin ekip tarafından onaylanmadı. Düzeltip yeniden gönderebilirsin.'
-                : 'Gerekçe: ${p.rejectReason} Düzeltip yeniden gönderebilirsin.',
-            productId: p.id,
-          ),
-        );
-      } else if (p.status == ProductStatus.approved) {
-        result.add(
-          Reminder(
-            kind: ReminderKind.submissionApproved,
-            title: '${p.name} onaylandı',
-            detail:
-                'Önerdiğin ürün artık herkesin kataloğunda. Katkın için teşekkürler!',
-            productId: p.id,
-          ),
-        );
-      }
+      final reminder = switch (p.status) {
+        ProductStatus.approved => Reminder(
+          kind: ReminderKind.submissionApproved,
+          title: '${p.name} onaylandı',
+          detail: p.editedByTeam
+              ? 'Önerdiğin ürün artık herkesin kataloğunda. Ekip bazı '
+                    'bilgilerini düzeltti; dolabındaki kayıt da güncellendi. '
+                    'Katkın için teşekkürler!'
+              : 'Önerdiğin ürün artık herkesin kataloğunda. '
+                    'Katkın için teşekkürler!',
+          productId: p.id,
+        ),
+        ProductStatus.duplicate => Reminder(
+          kind: ReminderKind.submissionDuplicate,
+          title: '${p.name} zaten katalogdaymış',
+          detail: switch (lookup?.call(p.duplicateOf ?? '')) {
+            final o? =>
+              'Önerdiğin ürün katalogda "${o.brand} ${o.name}" olarak var. '
+                  'Dolabındaki kayıt tarihleri ve notlarıyla birlikte ona '
+                  'bağlandı.',
+            null =>
+              'Önerdiğin ürün katalogda zaten var. Dolabındaki kayıt asıl '
+                  'ürüne bağlandı.',
+          },
+          productId: p.id,
+        ),
+        ProductStatus.removed => Reminder(
+          kind: ReminderKind.submissionRemoved,
+          title: '${p.name} kataloğa eklenmedi',
+          detail:
+              'Ekip bu öneriyi gerçek bir ürünle eşleştiremediği için sildi; '
+              'dolabından da kaldırıldı.',
+          productId: p.id,
+        ),
+        ProductStatus.pending => null,
+      };
+      if (reminder != null) result.add(reminder);
     }
   }
   if (reviewQueue > 0) {
@@ -180,7 +195,8 @@ List<Reminder> buildReminders({
         kind: ReminderKind.reviewQueue,
         title: '$reviewQueue ürün onay bekliyor',
         detail:
-            'Kullanıcıların önerdiği ürünleri inceleyip onayla ya da reddet.',
+            'Kullanıcıların önerdiği ürünleri incele: onayla, gerekirse düzelt '
+            'ya da yinelenenleri asıl ürüne bağla.',
       ),
     );
   }

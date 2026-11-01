@@ -1,3 +1,7 @@
+import base64
+
+from .conftest import PNG_URL
+
 PRODUCT = "p-temizleyici-lumen"
 
 
@@ -24,27 +28,116 @@ def test_approve_makes_product_public(api, client):
     assert client.post(f"/admin/submissions/{pid}/approve", headers=admin).status_code == 409
 
 
-def test_reject_reason_is_shown_only_to_owner(api, client):
-    owner = api.user()
+def _decide(client, admin, pid, action, json=None):
+    return client.post(f"/admin/submissions/{pid}/{action}", json=json, headers=admin)
+
+
+def test_reject_endpoint_no_longer_exists(api, client):
+    owner, admin = api.user(), api.admin()
     pid = api.submit(owner).json()["id"]
-    admin = api.admin()
+    assert _decide(client, admin, pid, "reject", {"reason": "Eksik"}).status_code == 404
 
-    assert client.post(f"/admin/submissions/{pid}/reject", json={"reason": ""}, headers=admin).status_code == 422
-    r = client.post(f"/admin/submissions/{pid}/reject", json={"reason": "İçerik listesi eksik."}, headers=admin)
-    assert r.json()["status"] == "rejected"
 
-    mine = client.get("/products/mine", headers=owner).json()[0]
-    assert mine["rejectReason"] == "İçerik listesi eksik."
-    rejected = client.get("/admin/submissions", params={"status": "rejected"}, headers=admin).json()
-    assert [p["id"] for p in rejected] == [pid]
-    # Reddedilen ürün düzeltilip yeniden önerilebilir.
-    assert api.submit(owner).status_code == 201
+def test_approve_with_edits_updates_fields_and_flags_owner(api, client):
+    owner, admin = api.user(), api.admin()
+    pid = api.submit(owner, name="papatya tnik").json()["id"]
+    edited = {
+        "name": "Papatya Tonik",
+        "brand": "Bahçe Kozmetik",
+        "category": "Tonik",
+        "skinTypes": ["Hassas Cilt", "Kuru Cilt"],
+        "ingredients": ["Aqua", "Chamomilla Recutita Flower Water", "Glycerin", "Allantoin"],
+        "description": "Ekip düzeltti.",
+        "barcode": "8690000000017",
+        "imageUrl": PNG_URL,
+    }
+    r = _decide(client, admin, pid, "approve", edited)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["status"] == "approved"
+    assert body["name"] == "Papatya Tonik"
+    assert body["editedByTeam"] is True
+    assert body["barcode"] == "8690000000017"
+    # Herkes düzeltilmiş hâli görür; "ekip düzenledi" bilgisi yalnızca önerene.
+    public = client.get(f"/products/{pid}").json()
+    assert public["ingredients"][-1] == "Allantoin"
+    assert public["editedByTeam"] is False
+    assert client.get("/products/mine", headers=owner).json()[0]["editedByTeam"] is True
+    # Yeni ad/barkod başkasına çarpmasın diye aranır.
+    assert client.get("/products", params={"q": "papatya tonik"}).json()["total"] == 1
+
+
+def test_approve_edit_is_validated(api, client):
+    owner, admin = api.user(), api.admin()
+    pid = api.submit(owner).json()["id"]
+    lumen = client.get(f"/products/{PRODUCT}").json()
+    clash = {
+        "name": lumen["name"],
+        "brand": lumen["brand"],
+        "category": "Tonik",
+        "skinTypes": [],
+        "ingredients": ["Aqua", "Glycerin"],
+        "imageUrl": PNG_URL,
+    }
+    # Katalogdaki ürünle aynı ada çevrilemez: yinelenen olarak işaretlenmeli.
+    assert _decide(client, admin, pid, "approve", clash).status_code == 409
+    # Fotoğraf zorunlu ve gerçekten görsel olmalı.
+    assert _decide(client, admin, pid, "approve", {**clash, "name": "Yeni Ad", "imageUrl": ""}).status_code == 422
+    fake = "data:image/png;base64," + base64.b64encode(b"<script>").decode()
+    assert _decide(client, admin, pid, "approve", {**clash, "name": "Yeni Ad", "imageUrl": fake}).status_code == 422
+    assert client.get("/products/mine", headers=owner).json()[0]["status"] == "pending"
+
+
+def test_duplicate_links_to_original_and_hides_submission(api, client):
+    owner, admin = api.user(), api.admin()
+    pid = api.submit(owner, name="Lumen Temizleyici").json()["id"]
+
+    assert _decide(client, admin, pid, "duplicate", {"originalId": "yok"}).status_code == 422
+    assert _decide(client, admin, pid, "duplicate", {"originalId": pid}).status_code == 422
+    other = api.submit(owner, name="Başka Ürün").json()["id"]
+    # Asıl ürün bekleyen bir öneri olamaz.
+    assert _decide(client, admin, pid, "duplicate", {"originalId": other}).status_code == 422
+
+    r = _decide(client, admin, pid, "duplicate", {"originalId": PRODUCT})
+    assert r.status_code == 200, r.text
+    assert r.json()["status"] == "duplicate"
+    assert r.json()["duplicateOf"] == PRODUCT
+    assert r.json()["imageUrl"] == ""
+
+    mine = {p["id"]: p for p in client.get("/products/mine", headers=owner).json()}
+    assert mine[pid]["duplicateOf"] == PRODUCT
+    # Yinelenen öneri katalogda görünmez, önerene bile.
+    assert client.get(f"/products/{pid}", headers=owner).status_code == 404
+    listed = {p["id"] for p in client.get("/products", headers=owner).json()["items"]}
+    assert pid not in listed and other in listed
+    dup = client.get("/admin/submissions", params={"status": "duplicate"}, headers=admin).json()
+    assert [p["id"] for p in dup] == [pid]
+    assert _decide(client, admin, pid, "remove").status_code == 409
+
+
+def test_remove_deletes_content_and_frees_the_name(api, client):
+    owner, admin = api.user(), api.admin()
+    pid = api.submit(owner, barcode="8690000000024").json()["id"]
+    r = _decide(client, admin, pid, "remove")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "removed"
+    assert body["imageUrl"] == "" and body["ingredients"] == [] and body["barcode"] is None
+
+    mine = client.get("/products/mine", headers=owner).json()
+    assert [p["status"] for p in mine] == ["removed"]
+    assert client.get(f"/products/{pid}", headers=owner).status_code == 404
+    # Silinen öneri yinelenen kontrolüne takılmaz; gerçek ürün yeniden önerilebilir.
+    assert api.submit(owner, barcode="8690000000024").status_code == 201
 
 
 def test_seed_products_cannot_be_moderated(api, client):
     admin = api.admin()
     assert client.post(f"/admin/submissions/{PRODUCT}/approve", headers=admin).status_code == 404
-    assert client.post("/admin/submissions/yok/reject", json={"reason": "Yok"}, headers=admin).status_code == 404
+    for action in ("duplicate", "remove"):
+        r = client.post(f"/admin/submissions/{PRODUCT}/{action}", json={"originalId": PRODUCT}, headers=admin)
+        assert r.status_code == 404
+    assert client.post("/admin/submissions/yok/remove", headers=admin).status_code == 404
 
 
 def test_review_upsert_and_rating(api, client):

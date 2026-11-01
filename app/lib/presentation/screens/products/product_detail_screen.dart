@@ -19,8 +19,12 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final catalog = context.watch<CatalogController>();
-    final p = catalog.byId(productId);
-    if (p == null) {
+    final found = catalog.byId(productId);
+    // Yinelenen öneri asıl ürünü gösterir; silinen öneri açılmaz.
+    final p = found != null && found.isDuplicate
+        ? catalog.byId(found.duplicateOf)
+        : found;
+    if (p == null || p.isRemoved) {
       return const Scaffold(body: Center(child: Text('Ürün bulunamadı.')));
     }
     final isFav = catalog.isFavorite(p.id);
@@ -29,8 +33,6 @@ class ProductDetailScreen extends StatelessWidget {
     );
     final badge = p.isPending
         ? 'Onay bekliyor'
-        : p.isRejected
-        ? 'Onaylanmadı'
         : p.isNew(DateTime.now())
         ? 'Yeni'
         : null;
@@ -255,16 +257,11 @@ class ProductDetailScreen extends StatelessWidget {
                           const SizedBox(height: 14),
                           _infoCard('Faydaları', p.benefits),
                         ],
-                        if (p.isRejected) ...[
-                          const SizedBox(height: 10),
-                          RejectedNotice(product: p),
-                        ],
                         const SizedBox(height: 10),
                         AnalysisCard(
                           analysis: analyzeForUser(context, p.ingredients),
                         ),
-                        if (!p.isPending && !p.isRejected)
-                          CommunityReviews(productId: p.id),
+                        if (!p.isPending) CommunityReviews(productId: p.id),
                         const SizedBox(height: 16),
                         _addButton(context, p, inShelf),
                       ],

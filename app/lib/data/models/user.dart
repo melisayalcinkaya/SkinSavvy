@@ -67,7 +67,8 @@ class AppUser {
   final bool isDemo;
 
   /// "user" ya da "admin". Yönetici (SkinSavvy ekibi) önerilen ürünleri
-  /// onaylar veya reddeder. Cihaz modunda demo hesabı bu yetkiye sahiptir,
+  /// onaylar (gerekirse düzeltip), yinelenenleri asıl ürüne bağlar ya da
+  /// spam öneriyi siler. Cihaz modunda demo hesabı bu yetkiye sahiptir,
   /// böylece onay akışı sunucusuz da denenebilir.
   final String role;
 

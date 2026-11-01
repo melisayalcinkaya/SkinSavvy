@@ -26,6 +26,7 @@ List<Reminder> watchReminders(BuildContext context, {DateTime? now}) {
     settings: settings,
     now: at,
     decisions: catalog.unseenDecisions,
+    lookup: catalog.byId,
     reviewQueue: catalog.reviewQueue.length,
     routine: [
       for (final slot in RoutineSlot.values)
@@ -190,15 +191,20 @@ class _ReminderTile extends StatelessWidget {
       fg: const Color(0xFFB4651F),
       bg: const Color(0xFFFFF3E3),
     ),
-    ReminderKind.submissionRejected => (
-      icon: Icons.report_gmailerrorred_outlined,
-      fg: AppColors.accent,
-      bg: const Color(0xFFFFEEE8),
-    ),
     ReminderKind.submissionApproved => (
       icon: Icons.verified_outlined,
       fg: AppColors.primary,
       bg: AppColors.lightGreen,
+    ),
+    ReminderKind.submissionDuplicate => (
+      icon: Icons.link_rounded,
+      fg: AppColors.primary,
+      bg: AppColors.lightGreen,
+    ),
+    ReminderKind.submissionRemoved => (
+      icon: Icons.delete_outline_rounded,
+      fg: AppColors.textGrey,
+      bg: AppColors.softGreen,
     ),
     ReminderKind.reviewQueue => (
       icon: Icons.fact_check_outlined,
@@ -229,14 +235,23 @@ class _ReminderTile extends StatelessWidget {
     }
     final productId = r.productId;
     if (productId != null) {
-      // Karar görüldü: bildirim kalkar, ürün (reddedildiyse gerekçesiyle) açılır.
-      context.read<CatalogController>().markDecisionSeen(productId);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailScreen(productId: productId),
-        ),
-      );
+      // Karar görüldü: bildirim kalkar. Onaylanan ürün, yinelenende asıl ürün
+      // açılır; silinen öneride açılacak bir ürün yoktur.
+      final catalog = context.read<CatalogController>();
+      final target = r.kind == ReminderKind.submissionDuplicate
+          ? catalog.byId(productId)?.duplicateOf
+          : r.kind == ReminderKind.submissionRemoved
+          ? null
+          : productId;
+      catalog.markDecisionSeen(productId);
+      if (target != null && catalog.byId(target) != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(productId: target),
+          ),
+        );
+      }
       return;
     }
     final id = r.shelfItemId;

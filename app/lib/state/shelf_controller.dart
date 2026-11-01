@@ -1,6 +1,7 @@
 import '../core/utils/date_utils.dart';
 import '../core/utils/ids.dart';
 import '../data/local/keys.dart';
+import '../data/models/json.dart';
 import '../data/models/product.dart';
 import '../data/models/shelf_item.dart';
 import 'user_store.dart';
@@ -11,9 +12,16 @@ class ShelfController extends UserStore {
     _items = readList(
       StoreKeys.shelf,
     ).map(ShelfItem.fromJson).where((e) => e.id.isNotEmpty).toList();
+    _appliedEdits = asStringList(readValue(_editsKey)).toSet();
   }
 
+  static const _editsKey = 'teamEditsApplied';
+
   List<ShelfItem> _items = [];
+
+  /// Dolaba bir kez yansıtılmış ekip düzeltmeleri. Kullanıcı sonra kaydı
+  /// kendisi düzenlerse ekip düzeltmesi tekrar üzerine yazılmaz.
+  Set<String> _appliedEdits = {};
 
   List<ShelfItem> get all => List.unmodifiable(_items);
 
@@ -29,6 +37,12 @@ class ShelfController extends UserStore {
       (a, b) =>
           (b.finishedOn ?? DateTime(0)).compareTo(a.finishedOn ?? DateTime(0)),
     );
+
+  /// Bitirdiklerim, memnuniyete göre: [satisfied] true ise "tekrar alırım"
+  /// dediklerim, false ise demediklerim, null ise hepsi.
+  List<ShelfItem> finishedBy({bool? satisfied}) => satisfied == null
+      ? finished
+      : finished.where((e) => (e.wouldRebuy ?? false) == satisfied).toList();
 
   int get runningLowCount => using.where((e) => e.isRunningLow).length;
 
@@ -164,6 +178,65 @@ class ShelfController extends UserStore {
         usage: usage,
         addedOn: dateOnly(DateTime.now()),
       ),
+    );
+  }
+
+  /// Ekibin önerilerle ilgili kararlarını dolaba yansıtır:
+  ///
+  /// - **silinen** (spam/sahte) öneri dolaptan kalkar;
+  /// - **yinelenen** önerinin kaydı tarihleri, notu ve puanıyla birlikte asıl
+  ///   ürüne bağlanır (asıl ürün [lookup] ile bulunamazsa yalnızca bağlantı
+  ///   değişir);
+  /// - ekibin **düzeltip onayladığı** ürünün ad, marka, kategori, fotoğraf ve
+  ///   içerik bilgisi bir kez güncellenir.
+  ///
+  /// Tekrar çağrılması güvenlidir; bir şey değişmezse dinleyiciler uyarılmaz.
+  void applyDecisions(
+    Iterable<Product> submissions,
+    Product? Function(String id) lookup,
+  ) {
+    var items = _items;
+    var applied = _appliedEdits;
+    for (final p in submissions) {
+      if (p.isRemoved) {
+        items = items.where((e) => e.productId != p.id).toList();
+      } else if (p.isDuplicate && p.duplicateOf != null) {
+        final original = lookup(p.duplicateOf!);
+        items = [
+          for (final e in items)
+            e.productId == p.id ? _relink(e, p.duplicateOf!, original) : e,
+        ];
+      } else if (p.isApproved && p.editedByTeam && !applied.contains(p.id)) {
+        applied = {...applied, p.id};
+        items = [
+          for (final e in items) e.productId == p.id ? _relink(e, p.id, p) : e,
+        ];
+      }
+    }
+    if (!identical(applied, _appliedEdits)) {
+      _appliedEdits = applied;
+      writeValue(_editsKey, applied.toList());
+    }
+    final changed =
+        items.length != _items.length ||
+        [
+          for (var i = 0; i < items.length; i++) i,
+        ].any((i) => !identical(items[i], _items[i]));
+    if (changed) {
+      _items = items;
+      _save();
+    }
+  }
+
+  static ShelfItem _relink(ShelfItem e, String productId, Product? p) {
+    final linked = e.copyWith(productId: productId);
+    if (p == null) return linked;
+    return linked.copyWith(
+      name: p.name,
+      brand: p.brand,
+      category: p.category,
+      imageUrl: p.imageUrl.isEmpty ? e.imageUrl : p.imageUrl,
+      ingredients: p.ingredients,
     );
   }
 

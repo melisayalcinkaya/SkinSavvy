@@ -20,7 +20,8 @@ def test_catalog_is_public_and_matches_seed(client):
     assert first["approvedAt"] == "2026-06-02"
     assert "price" not in first and "badge" not in first
     assert first["status"] == "approved"
-    assert first["rejectReason"] is None
+    assert first["duplicateOf"] is None
+    assert first["editedByTeam"] is False
 
 
 def test_search_is_turkish_and_case_insensitive(client):
@@ -75,6 +76,12 @@ def test_duplicate_detection_ignores_case_and_turkish_letters(api):
     assert api.submit(h, name="papatya tonik", brand="BAHÇE KOZMETİK").status_code == 409
 
 
+def test_duplicate_detection_also_matches_barcode(api):
+    h = api.user()
+    assert api.submit(h, barcode="8690000000031").status_code == 201
+    assert api.submit(h, name="Bambaşka Ad", barcode="8690000000031").status_code == 409
+
+
 def test_submission_validation(api):
     h = api.user()
     cases = [
@@ -86,6 +93,8 @@ def test_submission_validation(api):
         {"name": "A"},
         {"description": "x" * 501},
         {"unknownField": 1},
+        # Fotoğraf zorunlu: ekip ürünü fotoğraftan doğrular.
+        {"imageUrl": ""},
     ]
     for override in cases:
         assert api.submit(h, **override).status_code == 422, override

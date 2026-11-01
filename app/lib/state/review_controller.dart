@@ -2,6 +2,7 @@ import '../core/utils/ids.dart';
 import '../core/utils/text_utils.dart';
 import '../data/local/keys.dart';
 import '../data/models/json.dart';
+import '../data/models/product.dart';
 import '../data/models/review.dart';
 import '../data/models/shelf_item.dart';
 import '../data/remote/api_client.dart';
@@ -109,6 +110,38 @@ class ReviewController extends UserStore {
     final productId = _byId(id)?.productId;
     _reviews = _reviews.where((r) => r.id != id).toList();
     _save(productId);
+  }
+
+  /// Ekip kararlarını yorumlara yansıtır: silinen önerinin yorumu kalkar,
+  /// yinelenen önerinin yorumu asıl ürüne taşınır (asıl ürüne zaten yorum
+  /// yazılmışsa o korunur). Tekrar çağrılması güvenlidir.
+  void applyDecisions(Iterable<Product> submissions) {
+    var reviews = _reviews;
+    final moved = <String>{};
+    for (final p in submissions) {
+      if (!p.isRemoved && !(p.isDuplicate && p.duplicateOf != null)) continue;
+      final mine = reviews.where((r) => r.productId == p.id).toList();
+      if (mine.isEmpty) continue;
+      reviews = reviews.where((r) => r.productId != p.id).toList();
+      if (p.isRemoved) {
+        _unsynced = {..._unsynced}..remove(p.id);
+        continue;
+      }
+      final target = p.duplicateOf!;
+      if (reviews.any((r) => r.productId == target)) continue;
+      reviews = [...reviews, mine.first.copyWith(productId: target)];
+      moved.add(target);
+    }
+    if (identical(reviews, _reviews)) return;
+    _reviews = reviews;
+    if (moved.isEmpty) {
+      writeValue(_syncKey, _unsynced.toList());
+      _save();
+    } else {
+      for (final id in moved) {
+        _save(id);
+      }
+    }
   }
 
   Review? _byId(String id) {

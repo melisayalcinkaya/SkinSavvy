@@ -43,6 +43,10 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
   _Tab activeTab = _Tab.all;
   String query = '';
 
+  /// Bitirdiklerim süzgeci: null hepsi, true memnun kaldıklarım, false
+  /// kalmadıklarım ("Tekrar Alırım / Almam" cevabına göre).
+  bool? satisfied;
+
   List<ShelfItem> _filter(List<ShelfItem> items) {
     final q = searchKey(query);
     if (q.isEmpty) return items;
@@ -59,7 +63,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         _Tab.all => shelf.owned,
         _Tab.using => shelf.using,
         _Tab.wishlist => shelf.wishlist,
-        _Tab.finished => shelf.finished,
+        _Tab.finished => shelf.finishedBy(satisfied: satisfied),
       });
 
   void _showAddToRoutineModal(ShelfItem product) {
@@ -234,6 +238,8 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                   children: [
                     if (activeTab == _Tab.all && query.isEmpty)
                       _statsRow(shelf),
+                    if (activeTab == _Tab.finished && shelf.finished.isNotEmpty)
+                      _satisfactionFilter(shelf),
                     if (items.isEmpty) _emptyState() else ..._cards(items),
                     if (activeTab == _Tab.finished && shelf.finished.isNotEmpty)
                       _shareBanner(),
@@ -246,6 +252,42 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
       ),
     );
   }
+
+  Widget _satisfactionFilter(ShelfController shelf) => Padding(
+    padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+    child: Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final (value, label) in [
+          (null, 'Tümü'),
+          (true, 'Memnun kaldıklarım'),
+          (false, 'Memnun kalmadıklarım'),
+        ])
+          ChoiceChip(
+            label: Text(
+              '$label (${shelf.finishedBy(satisfied: value).length})',
+              style: TextStyle(
+                fontSize: 11,
+                color: satisfied == value
+                    ? AppColors.primary
+                    : AppColors.textGrey,
+              ),
+            ),
+            selected: satisfied == value,
+            showCheckmark: false,
+            selectedColor: AppColors.lightGreen,
+            backgroundColor: Colors.white,
+            side: BorderSide(
+              color: satisfied == value
+                  ? AppColors.primary
+                  : AppColors.softGreen,
+            ),
+            onSelected: (_) => setState(() => satisfied = value),
+          ),
+      ],
+    ),
+  );
 
   Iterable<Widget> _cards(List<ShelfItem> items) => items.map(
     (it) => switch (it.status) {
@@ -401,6 +443,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
       );
 
   Widget _emptyState() {
+    final shelf = context.read<ShelfController>();
     final (icon, title, sub) = switch (activeTab) {
       _ when query.isNotEmpty => (
         Icons.search_off_outlined,
@@ -411,6 +454,13 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         Icons.favorite_border,
         'Alınacaklar listen boş',
         'Ürün detayında "alınacaklara ekle" diyerek listeyi doldurabilirsin.',
+      ),
+      _Tab.finished when satisfied != null && shelf.finished.isNotEmpty => (
+        Icons.filter_alt_off_outlined,
+        'Bu grupta ürün yok',
+        satisfied == true
+            ? 'Bitirip "Tekrar Alırım" dediğin ürünler burada görünür.'
+            : 'Bitirip "Tekrar Almam" dediğin ürünler burada görünür.',
       ),
       _Tab.finished => (
         Icons.check_circle_outline,
@@ -614,9 +664,6 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     final pending = context.select<CatalogController, bool>(
       (c) => c.byId(it.productId)?.isPending ?? false,
     );
-    final rejected = context.select<CatalogController, bool>(
-      (c) => c.byId(it.productId)?.isRejected ?? false,
-    );
     // Profildeki bir alerjen bu üründe var mı?
     final avoid = analyzeForUser(context, it.ingredients).findings
         .where((f) => f.level == FindingLevel.avoid)
@@ -701,12 +748,6 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                         _chip(it.category),
                         if (pending)
                           _chip('Onay bekliyor', bg: AppColors.softGreen),
-                        if (rejected)
-                          _chip(
-                            'Onaylanmadı',
-                            bg: const Color(0xFFFFEEE8),
-                            fg: AppColors.accent,
-                          ),
                         if (daysLeft != null && daysLeft <= warnDays)
                           _chip(
                             daysLeft < 0

@@ -55,17 +55,16 @@ class FakeServer {
     'brand': 'Marka',
     'category': 'Serum',
     'imageUrl': '',
-    'price': null,
     'rating': 4.5,
     'reviewCount': 2,
-    'badge': null,
     'ingredients': ['Aqua', 'Glycerin'],
     'benefits': <String>[],
     'skinTypes': ['Tüm Cilt Tipleri'],
     'description': '',
     'barcode': null,
     'status': status,
-    'rejectReason': status == 'rejected' ? 'İçerik eksik.' : null,
+    'duplicateOf': status == 'duplicate' ? 'p-onayli' : null,
+    'editedByTeam': false,
   };
 
   http.Response json(Object? body, [int status = 200]) => http.Response(
@@ -123,8 +122,11 @@ class FakeServer {
       case 'GET /products/mine':
         return json([
           product('p-bekleyen', 'pending'),
-          product('p-red', 'rejected'),
+          product('p-yinelenen', 'duplicate'),
+          product('p-silinen', 'removed'),
         ]);
+      case 'GET /admin/submissions':
+        return json([product('p-bekleyen', 'pending')]);
       case 'POST /products':
         if (body['name'] == 'Ürün p-onayli') {
           return json({
@@ -135,6 +137,13 @@ class FakeServer {
           ...product('p-yeni', 'pending'),
           'name': body['name'],
         }, 201);
+    }
+    final decision = RegExp(
+      r'^POST /admin/submissions/([^/]+)/(approve|duplicate|remove)$',
+    ).firstMatch(route);
+    if (decision != null) {
+      decisions.add((decision.group(1)!, decision.group(2)!, body));
+      return json(product(decision.group(1)!, 'approved'));
     }
     final review = RegExp(
       r'^(PUT|DELETE) /products/([^/]+)/reviews/me$',
@@ -153,6 +162,9 @@ class FakeServer {
     }
     return json({'detail': 'Bulunamadı.'}, 404);
   }
+
+  /// Ekip kararları: (öneri, karar, gövde).
+  final decisions = <(String, String, Object?)>[];
 
   MockClient get client => MockClient((r) => handle(r));
 }
@@ -298,10 +310,55 @@ void main() {
       expect(catalog.isLoading, isTrue);
       await catalog.reload();
       expect(catalog.products.map((p) => p.id), ['p-bekleyen', 'p-onayli']);
-      // Reddedilen öneri listede yok ama gerekçesiyle erişilebilir.
-      final rejected = catalog.byId('p-red')!;
-      expect(rejected.isRejected, isTrue);
-      expect(rejected.rejectReason, 'İçerik eksik.');
+      // Yinelenen ve silinen öneriler katalogda yok; karar bildirimi için
+      // önerilerim listesinde.
+      expect(catalog.submissions.map((p) => p.status), [
+        ProductStatus.pending,
+        ProductStatus.duplicate,
+        ProductStatus.removed,
+      ]);
+      expect(catalog.byId('p-yinelenen')!.duplicateOf, 'p-onayli');
+      expect(catalog.unseenDecisions.map((p) => p.id), [
+        'p-yinelenen',
+        'p-silinen',
+      ]);
+      expect(catalog.contributionCount, 1);
+      catalog.dispose();
+    });
+
+    test('ekip kararları doğru uç noktaya gider', () async {
+      final catalog = CatalogController(store, 'u1', api: api, isAdmin: true);
+      await catalog.reload();
+      final p = catalog.reviewQueue.single;
+      await catalog.approve(p.id);
+      await catalog.approve(
+        p.id,
+        edited: p.copyWith(
+          name: '  Düzeltilmiş <b>Ad</b> ',
+          imageUrl: 'data:x',
+        ),
+      );
+      await catalog.markDuplicate(p.id, 'p-onayli');
+      await catalog.remove(p.id);
+      expect(server.decisions.map((d) => d.$2), [
+        'approve',
+        'approve',
+        'duplicate',
+        'remove',
+      ]);
+      expect(server.decisions[0].$3, isNull);
+      final edit = server.decisions[1].$3! as Map;
+      expect(edit['name'], isNot(contains('<')));
+      expect(edit['imageUrl'], 'data:x');
+      expect(edit.keys, containsAll(['brand', 'skinTypes', 'ingredients']));
+      expect(server.decisions[2].$3, {'originalId': 'p-onayli'});
+      expect(server.decisions[3].$3, isNull);
+      // Asıl ürün onaylı olmalı: istek gönderilmeden durdurulur.
+      await expectLater(
+        catalog.markDuplicate(p.id, 'p-yinelenen'),
+        throwsStateError,
+      );
+      expect(server.decisions, hasLength(4));
       catalog.dispose();
     });
 
@@ -323,6 +380,7 @@ void main() {
         category: 'Tonik',
         skinTypes: const ['Tüm Cilt Tipleri'],
         ingredients: const ['Aqua', 'Glycerin'],
+        imageUrl: 'data:image/png;base64,iVBORw0KGgo=',
       );
       expect(p.status, ProductStatus.pending);
       expect(catalog.byId('p-yeni')?.name, 'Gül Tonik');
@@ -338,6 +396,7 @@ void main() {
           category: 'Serum',
           skinTypes: const [],
           ingredients: const ['Aqua', 'Glycerin'],
+          imageUrl: 'data:image/png;base64,iVBORw0KGgo=',
         ),
         throwsA(isA<ApiException>().having((e) => e.status, 'status', 409)),
       );
