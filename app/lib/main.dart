@@ -1,24 +1,15 @@
-// ============================================================
-// lib/main.dart
-// ============================================================
 import 'package:flutter/material.dart';
-import 'core/theme/app_theme.dart';
-import 'presentation/screens/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const SkinSavvyApp());
-}
+import 'app.dart';
+import 'data/local/local_store.dart';
+import 'data/repositories/auth_repository.dart';
+import 'state/session_controller.dart';
 
-class SkinSavvyApp extends StatelessWidget {
-  const SkinSavvyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SkinSavvy',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home: const LoginScreen(),
-    );
-  }
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final store = LocalStore(await SharedPreferences.getInstance());
+  final session = SessionController(LocalAuthRepository(store));
+  await session.restore();
+  runApp(SkinSavvyApp(store: store, session: session));
 }

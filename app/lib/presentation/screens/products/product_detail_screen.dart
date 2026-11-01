@@ -1,191 +1,366 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../core/theme/app_theme.dart';
-import '../../../data/models/models.dart';
+import '../../../core/utils/text_utils.dart';
+import '../../../data/models/product.dart';
+import '../../../state/catalog_controller.dart';
+import '../../../state/shelf_controller.dart';
+import '../../widgets/product_image.dart';
 import '../shared/add_product_modal.dart';
 
-class ProductDetailScreen extends StatefulWidget {
-  final ProductModel product;
-  const ProductDetailScreen({super.key, required this.product});
-  @override
-  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
-}
+class ProductDetailScreen extends StatelessWidget {
+  const ProductDetailScreen({super.key, required this.productId});
 
-class _ProductDetailScreenState extends State<ProductDetailScreen> {
-  late bool isFav = widget.product.isFavorite;
+  final String productId;
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.product;
+    final catalog = context.watch<CatalogController>();
+    final p = catalog.byId(productId);
+    if (p == null) {
+      return const Scaffold(body: Center(child: Text('Ürün bulunamadı.')));
+    }
+    final isFav = catalog.isFavorite(p.id);
+    final inShelf = context.select<ShelfController, bool>(
+      (s) => s.activeForProduct(p.id) != null,
+    );
+    final badge = p.isPending ? 'Onay bekliyor' : p.badge;
+
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
-        child: Column(children: [
-          Padding(
+        child: Column(
+          children: [
+            Padding(
               padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-              child: Row(children: [
-                IconButton(
+              child: Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Geri',
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back,
-                        color: AppColors.textDark)),
-                const Spacer(),
-                GestureDetector(
-                    onTap: () => setState(() => isFav = !isFav),
-                    child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                            color: AppColors.lightGreen,
-                            shape: BoxShape.circle),
-                        child: Icon(
-                            isFav ? Icons.favorite : Icons.favorite_border,
-                            size: 16,
-                            color: isFav
-                                ? AppColors.primary
-                                : AppColors.textDark))),
-              ])),
-          Expanded(
-            child: ListView(children: [
-              SizedBox(
-                  height: 190,
-                  child: Stack(fit: StackFit.expand, children: [
-                    Image.network(p.imageUrl, fit: BoxFit.cover),
-                    Positioned(
-                        top: 10,
-                        left: 10,
-                        child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                                gradient: AppGradients.badge,
-                                borderRadius: BorderRadius.circular(20)),
-                            child: const Text('Çok Satan',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600)))),
-                  ])),
-              Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: isFav ? 'Favorilerden çıkar' : 'Favorilere ekle',
+                    onPressed: () => catalog.toggleFavorite(p.id),
+                    icon: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: AppColors.lightGreen,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        size: 16,
+                        color: isFav ? AppColors.primary : AppColors.textDark,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  SizedBox(
+                    height: 220,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ProductImage(
+                          p.imageUrl,
+                          category: p.category,
+                          radius: 0,
+                        ),
+                        if (badge != null)
+                          Positioned(
+                            top: 10,
+                            left: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: p.isPending
+                                    ? null
+                                    : AppGradients.badge,
+                                color: p.isPending ? AppColors.secondary : null,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                badge,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(p.brand,
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500)),
+                        Text(
+                          p.brand,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(p.name,
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textDark)),
+                        Text(
+                          p.name,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textDark,
+                          ),
+                        ),
                         const SizedBox(height: 10),
-                        Row(children: [
-                          const Icon(Icons.star,
-                              color: AppColors.peach, size: 16),
-                          const SizedBox(width: 4),
-                          Text('${p.rating}',
-                              style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w500)),
-                          const SizedBox(width: 6),
-                          Text('(${p.reviewCount} değerlendirme)',
-                              style: const TextStyle(
-                                  fontSize: 11, color: AppColors.textGrey)),
-                        ]),
-                        const SizedBox(height: 14),
-                        _infoCard('Faydaları', [
-                          'Cilt tonunu eşitler',
-                          'Koyu lekeleri azaltır',
-                          'Anti-aging etkisi',
-                        ]),
-                        const SizedBox(height: 10),
-                        Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(13),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16)),
-                            child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('İçerik',
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors.textDark)),
-                                  SizedBox(height: 6),
-                                  Text(
-                                      'Aqua, L-Ascorbic Acid, Propanediol, Hyaluronic Acid, Ferulic Acid...',
-                                      style: TextStyle(
-                                          fontSize: 11,
-                                          color: AppColors.textGrey,
-                                          height: 1.6)),
-                                ])),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                            width: double.infinity,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                  gradient: AppGradients.primary,
-                                  borderRadius: BorderRadius.circular(14)),
-                              child: ElevatedButton(
-                                onPressed: () => showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => AddProductModal(
-                                        productName: p.name,
-                                        productBrand: p.brand)),
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14)),
-                                child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Icon(Icons.add,
-                                          color: Colors.white, size: 18),
-                                      SizedBox(width: 6),
-                                      Text('Ürünlerime Ekle',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13)),
-                                    ]),
+                        Row(
+                          children: [
+                            if (p.reviewCount > 0) ...[
+                              const Icon(
+                                Icons.star,
+                                color: AppColors.peach,
+                                size: 16,
                               ),
-                            )),
-                      ])),
-            ]),
-          ),
-        ]),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${p.rating}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '(${p.reviewCount} değerlendirme)',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
+                              ),
+                              const Spacer(),
+                            ],
+                            Text(
+                              formatPrice(p.price),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (p.skinTypes.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              for (final t in [p.category, ...p.skinTypes])
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.lightGreen,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    t,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                        if (p.description.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            p.description,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textGrey,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                        if (p.benefits.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          _infoCard('Faydaları', p.benefits),
+                        ],
+                        const SizedBox(height: 10),
+                        _ingredientsCard(p),
+                        const SizedBox(height: 16),
+                        _addButton(context, p, inShelf),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _infoCard(String title, List<String> items) => Container(
+  Widget _addButton(BuildContext context, Product p, bool inShelf) {
+    if (inShelf) {
+      return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(13),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(16)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title,
-              style: const TextStyle(
+          color: AppColors.lightGreen,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle, color: AppColors.primary, size: 18),
+            SizedBox(width: 6),
+            Text(
+              'Bu ürün dolabında',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return SizedBox(
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: AppGradients.primary,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: ElevatedButton(
+          onPressed: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => AddProductModal(product: p),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add, color: Colors.white, size: 18),
+              SizedBox(width: 6),
+              Text(
+                'Ürünlerime Ekle',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark)),
-          const SizedBox(height: 8),
-          ...items.map((t) => Padding(
-              padding: const EdgeInsets.only(bottom: 5),
-              child: Row(children: [
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ingredientsCard(Product p) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(13),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'İçerik (${p.ingredients.length})',
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          p.ingredients.isEmpty
+              ? 'İçerik bilgisi girilmemiş.'
+              : p.ingredients.join(', '),
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.textGrey,
+            height: 1.6,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _infoCard(String title, List<String> items) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(13),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...items.map(
+          (t) => Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: Row(
+              children: [
                 const Icon(Icons.check, size: 14, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: Text(t,
-                        style: const TextStyle(
-                            fontSize: 11, color: AppColors.textGrey))),
-              ]))),
-        ]),
-      );
+                  child: Text(
+                    t,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
