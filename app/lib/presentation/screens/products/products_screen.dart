@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -303,23 +305,29 @@ class _ProductsScreenState extends State<ProductsScreen> {
   ) {
     if (items.isEmpty) return _emptyState();
     return LayoutBuilder(
-      builder: (context, constraints) => GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          // Geniş ekranda (tablet/web) daha çok sütun.
-          crossAxisCount: (constraints.maxWidth / 190).floor().clamp(2, 5),
-          // Sabit oran dar ekranda (320 px) bilgi alanını 62 px'e düşürüp
-          // taşırıyordu; sabit yükseklikte bilgi alanı her genişlikte yeterli.
-          mainAxisExtent: 250,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: items.length,
-        itemBuilder: (_, i) =>
-            _card(items[i], catalog, analyses[items[i].id]!.verdict),
-      ),
+      builder: (context, constraints) {
+        // Geniş ekranda (tablet/web) daha çok sütun.
+        final columns = (constraints.maxWidth / 190).floor().clamp(2, 5);
+        final cardWidth =
+            (constraints.maxWidth - 28 - 10 * (columns - 1)) / columns;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            // Yalnızca oran kullanmak dar ekranda (320 px) bilgi alanını 62 px'e
+            // düşürüp taşırıyordu; yalnızca sabit yükseklik de geniş kartlarda
+            // görseli kırpıyordu. İkisinin büyüğü alınır.
+            mainAxisExtent: max(250, cardWidth / 0.72),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: items.length,
+          itemBuilder: (_, i) =>
+              _card(items[i], catalog, analyses[items[i].id]!.verdict),
+        );
+      },
     );
   }
 
