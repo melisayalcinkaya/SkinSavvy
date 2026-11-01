@@ -1,0 +1,22 @@
+name: lockfile
+on:
+  push:
+    branches: [lockfile-tmp]
+permissions:
+  contents: write
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.9"
+          channel: stable
+      - run: cd app && flutter pub get
+      - run: |
+          git config user.name melisayalcinkaya
+          git config user.email melisa.yalcinkaya22@gmail.com
+          git add app/pubspec.lock
+          git commit -m "build: update pubspec.lock" || echo "değişiklik yok"
+          git push origin HEAD:lockfile-tmp
