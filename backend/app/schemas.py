@@ -203,10 +203,8 @@ class ProductOut(Schema):
     brand: str
     category: str
     image_url: str
-    price: float | None
     rating: float
     review_count: int
-    badge: str | None
     ingredients: list[str]
     benefits: list[str]
     skin_types: list[str]
@@ -214,6 +212,9 @@ class ProductOut(Schema):
     barcode: str | None
     status: str
     reject_reason: str | None = None
+    added_by: str | None = None
+    approved_at: str | None = None
+    created_at: str | None = None
 
 
 class ProductPage(Schema):

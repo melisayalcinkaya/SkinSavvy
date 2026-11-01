@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:skinsavvy_app/presentation/screens/reminders/reminders_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/auth/login_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/main_navigation.dart';
+import 'package:skinsavvy_app/presentation/screens/moderation/moderation_screen.dart';
+import 'package:skinsavvy_app/presentation/screens/products/product_detail_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/onboarding/onboarding_flow.dart';
 
 import 'app_harness.dart';
@@ -93,4 +95,56 @@ void main() {
     expect(profile.allergens, {'Retinol'});
     expect(session.user!.onboarded, isTrue);
   });
+
+  testWidgets(
+    'ürün önerisi: ekip onaylar, herkese açılır, önerene bildirim gider',
+    (tester) async {
+      await pumpApp(tester);
+      await tapText(tester, 'Demo hesabıyla dene');
+
+      // Katalogda yok → öner.
+      await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+      await tester.enterText(find.byType(TextField).first, 'Papatya Tonik');
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Bu ürünü sisteme ekle');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'örn: CeraVe'),
+        'Bahçe Kozmetik',
+      );
+      await tapFinder(tester, find.text('Kategori seçin'));
+      await tapFinder(tester, find.text('Tonik').last);
+      await tapFinder(tester, find.text('Hassas Cilt').last);
+      await tapText(tester, 'Devam Et');
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Aqua, Glycerin, Niacinamide...'),
+        'Aqua, Chamomilla Recutita Flower Water, Glycerin, Allantoin',
+      );
+      await tester.pumpAndSettle();
+      await tapText(tester, 'Devam Et');
+      await tapText(tester, 'İncelemeye Gönder');
+      expect(find.text('İncelemeye Gönderildi!'), findsOneWidget);
+
+      // Ekip (demo hesabı bu yetkiye sahip) onaylar.
+      await tapText(tester, 'Onay ekranını aç');
+      expect(find.byType(ModerationScreen), findsOneWidget);
+      expect(find.text('Papatya Tonik'), findsOneWidget);
+      expect(find.textContaining('Öneren: Ece D.'), findsOneWidget);
+      await tapText(tester, 'Onayla');
+      expect(find.text('İncelenecek öneri yok'), findsOneWidget);
+      await tapFinder(tester, find.byTooltip('Geri'));
+      await tapText(tester, 'Koleksiyonuma Git');
+
+      // Öneren zilde kararı görür; ürün katalogda "Ekleyen" bilgisiyle.
+      await tapFinder(tester, find.byIcon(Icons.calendar_today_outlined).last);
+      await tapFinder(tester, find.byType(ReminderBell));
+      await tapText(tester, 'Papatya Tonik onaylandı');
+      expect(find.byType(ProductDetailScreen), findsOneWidget);
+      expect(find.textContaining('Ekleyen: Ece D.'), findsOneWidget);
+      expect(find.text('Yeni'), findsOneWidget);
+      expect(find.text('Henüz değerlendirme yok'), findsOneWidget);
+      await tapFinder(tester, find.byTooltip('Geri'));
+      // Bildirim görüldü, listeden kalktı.
+      expect(find.text('Papatya Tonik onaylandı'), findsNothing);
+    },
+  );
 }

@@ -2,9 +2,10 @@ import '../models/product.dart';
 
 const _img = 'assets/images/products';
 
-/// Demo kataloğu. Markalar kurgusaldır; içerik listeleri (INCI) gerçek
-/// ürünlerde sık görülen bileşimlerden derlenmiştir ve içerik analizini
-/// göstermek için seçilmiştir. Fiyat ve puanlar örnek değerdir.
+/// Demo kataloğu: topluluğun eklediği ve ekibin onayladığı ürünleri temsil
+/// eder. Markalar ve ekleyen kişiler kurgusaldır; içerik listeleri (INCI)
+/// gerçek ürünlerde sık görülen bileşimlerden derlenmiştir. Puanlar burada
+/// yazılmaz, yorumlardan hesaplanır (bkz. demo_reviews.dart).
 const demoCatalog = <Product>[
   Product(
     id: 'p-temizleyici-lumen',
@@ -12,10 +13,8 @@ const demoCatalog = <Product>[
     brand: 'Lumen Lab',
     category: 'Temizleyici',
     imageUrl: '$_img/temizleyici-lumen.png',
-    price: 289.90,
-    rating: 4.8,
-    reviewCount: 1240,
-    badge: 'Popüler',
+    addedBy: 'Zeynep K.',
+    approvedAt: '2026-06-02',
     skinTypes: ['Kuru Cilt', 'Normal Cilt', 'Hassas Cilt'],
     benefits: ['Bariyeri korur', 'Cildi kurutmadan temizler', 'Parfümsüz'],
     ingredients: [
@@ -37,10 +36,8 @@ const demoCatalog = <Product>[
     brand: 'Aurora Botanics',
     category: 'Serum',
     imageUrl: '$_img/serum-c-aurora.png',
-    price: 449.90,
-    rating: 4.6,
-    reviewCount: 2150,
-    badge: 'Çok Satan',
+    addedBy: 'Deniz A.',
+    approvedAt: '2026-06-15',
     skinTypes: ['Normal Cilt', 'Karma Cilt', 'Yağlı Cilt'],
     benefits: [
       'Cilt tonunu eşitler',
@@ -64,9 +61,8 @@ const demoCatalog = <Product>[
     brand: 'Lumen Lab',
     category: 'Nemlendirici',
     imageUrl: '$_img/krem-seramid-lumen.png',
-    price: 349.90,
-    rating: 4.7,
-    reviewCount: 890,
+    addedBy: 'Elif S.',
+    approvedAt: '2026-07-01',
     skinTypes: ['Kuru Cilt', 'Normal Cilt', 'Hassas Cilt'],
     benefits: ['24 saat nem', 'Bariyer onarımı', 'Kızarıklığı yatıştırır'],
     ingredients: [
@@ -88,10 +84,8 @@ const demoCatalog = <Product>[
     brand: 'Solara',
     category: 'Güneş Kremi',
     imageUrl: '$_img/gunes-mineral-solara.png',
-    price: 389.90,
-    rating: 4.5,
-    reviewCount: 1580,
-    badge: 'Önerilen',
+    addedBy: 'Mert Y.',
+    approvedAt: '2026-07-20',
     skinTypes: ['Tüm Cilt Tipleri'],
     benefits: [
       'Geniş spektrum koruma',
@@ -115,9 +109,8 @@ const demoCatalog = <Product>[
     brand: 'Aurora Botanics',
     category: 'Serum',
     imageUrl: '$_img/serum-retinol-aurora.png',
-    price: 529.90,
-    rating: 4.6,
-    reviewCount: 760,
+    addedBy: 'Zeynep K.',
+    approvedAt: '2026-08-04',
     skinTypes: ['Normal Cilt', 'Karma Cilt', 'Yağlı Cilt'],
     benefits: ['İnce çizgileri azaltır', 'Hücre yenilenmesini destekler'],
     ingredients: [
@@ -134,9 +127,8 @@ const demoCatalog = <Product>[
     brand: 'Clarity Co.',
     category: 'Tonik',
     imageUrl: '$_img/tonik-bha-clarity.png',
-    price: 319.90,
-    rating: 4.7,
-    reviewCount: 1325,
+    addedBy: 'Deniz A.',
+    approvedAt: '2026-08-22',
     skinTypes: ['Yağlı Cilt', 'Karma Cilt'],
     benefits: ['Gözenekleri arındırır', 'Siyah noktaları azaltır'],
     ingredients: [
@@ -154,10 +146,8 @@ const demoCatalog = <Product>[
     brand: 'Clarity Co.',
     category: 'Serum',
     imageUrl: '$_img/serum-niacinamide-clarity.png',
-    price: 299.90,
-    rating: 4.5,
-    reviewCount: 2840,
-    badge: 'Çok Satan',
+    addedBy: 'Elif S.',
+    approvedAt: '2026-09-05',
     skinTypes: ['Yağlı Cilt', 'Karma Cilt', 'Normal Cilt'],
     benefits: [
       'Sebumu dengeler',
@@ -179,9 +169,8 @@ const demoCatalog = <Product>[
     brand: 'Lumen Lab',
     category: 'Peeling',
     imageUrl: '$_img/tonik-aha-lumen.png',
-    price: 279.90,
-    rating: 4.3,
-    reviewCount: 640,
+    addedBy: 'Mert Y.',
+    approvedAt: '2026-09-19',
     skinTypes: ['Normal Cilt', 'Karma Cilt'],
     benefits: ['Ölü hücreleri arındırır', 'Işıltı verir'],
     ingredients: [
@@ -200,9 +189,8 @@ const demoCatalog = <Product>[
     brand: 'Terra Verde',
     category: 'Maske',
     imageUrl: '$_img/maske-kil-terra.png',
-    price: 189.90,
-    rating: 4.4,
-    reviewCount: 410,
+    addedBy: 'Zeynep K.',
+    approvedAt: '2026-10-03',
     skinTypes: ['Yağlı Cilt', 'Karma Cilt'],
     benefits: ['Fazla yağı emer', 'Gözenekleri sıkılaştırır'],
     ingredients: [
@@ -222,10 +210,8 @@ const demoCatalog = <Product>[
     brand: 'Aurora Botanics',
     category: 'Serum',
     imageUrl: '$_img/serum-hyaluronik-aurora.png',
-    price: 259.90,
-    rating: 4.8,
-    reviewCount: 1960,
-    badge: 'Popüler',
+    addedBy: 'Deniz A.',
+    approvedAt: '2026-10-12',
     skinTypes: ['Tüm Cilt Tipleri'],
     benefits: ['Yoğun nem', 'Dolgunluk görünümü', 'Hassas ciltlere uygun'],
     ingredients: [
@@ -243,9 +229,8 @@ const demoCatalog = <Product>[
     brand: 'Terra Verde',
     category: 'Temizleyici',
     imageUrl: '$_img/temizleyici-yag-terra.png',
-    price: 239.90,
-    rating: 4.4,
-    reviewCount: 530,
+    addedBy: 'Elif S.',
+    approvedAt: '2026-10-21',
     skinTypes: ['Kuru Cilt', 'Normal Cilt'],
     benefits: ['Makyajı eritir', 'Güneş kremini temizler'],
     ingredients: [
@@ -263,9 +248,8 @@ const demoCatalog = <Product>[
     brand: 'Clarity Co.',
     category: 'Nemlendirici',
     imageUrl: '$_img/nemlendirici-jel-clarity.png',
-    price: 269.90,
-    rating: 4.6,
-    reviewCount: 980,
+    addedBy: 'Mert Y.',
+    approvedAt: '2026-10-27',
     skinTypes: ['Yağlı Cilt', 'Karma Cilt'],
     benefits: ['Hafif doku', 'Parlama yapmaz', 'Gözenek tıkamaz'],
     ingredients: [

@@ -5,11 +5,13 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/routine.dart';
 import '../../../data/models/user.dart';
+import '../../../state/catalog_controller.dart';
 import '../../../state/review_controller.dart';
 import '../../../state/routine_controller.dart';
 import '../../../state/session_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/user_avatar.dart';
+import '../moderation/moderation_screen.dart';
 import '../reviews/my_reviews_screen.dart';
 import 'edit_profile_screen.dart';
 import 'edit_skin_profile_screen.dart';
@@ -416,6 +418,10 @@ class ProfileScreen extends StatelessWidget {
   Widget _menuCard(BuildContext context) {
     void open(Widget screen) =>
         Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    // Yalnızca ekip (yönetici) görür; sayı onay bekleyen öneri sayısıdır.
+    final queue = context.select<CatalogController, int?>(
+      (c) => c.isAdmin ? c.reviewQueue.length : null,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
@@ -424,6 +430,13 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
+          if (queue != null)
+            _menuItem(
+              Icons.fact_check_outlined,
+              'Onay Bekleyen Ürünler',
+              trailing: '$queue',
+              onTap: () => open(const ModerationScreen()),
+            ),
           _menuItem(
             Icons.person_outline,
             'Profil Düzenle',

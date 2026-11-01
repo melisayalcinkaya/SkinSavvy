@@ -1,0 +1,86 @@
+[
+  {
+    "productId": "p-temizleyici-lumen",
+    "author": "Zeynep K.",
+    "rating": 5,
+    "comment": "Gerginlik bırakmıyor, hassas cildimde kızarıklık yapmadı.",
+    "date": "2026-07-10"
+  },
+  {
+    "productId": "p-temizleyici-lumen",
+    "author": "Mert Y.",
+    "rating": 4,
+    "comment": "Makyajı tek başına tam çıkarmıyor, akşam yağ bazlıyla birlikte kullanıyorum.",
+    "date": "2026-08-02"
+  },
+  {
+    "productId": "p-serum-c-aurora",
+    "author": "Elif S.",
+    "rating": 4,
+    "comment": "İki ayda lekelerim belirgin açıldı. Kokusu var, hassas ciltler dikkat.",
+    "date": "2026-08-11"
+  },
+  {
+    "productId": "p-serum-c-aurora",
+    "author": "Deniz A.",
+    "rating": 3,
+    "comment": "Açtıktan birkaç ay sonra rengi koyulaştı, küçük boy almak daha mantıklı.",
+    "date": "2026-09-14"
+  },
+  {
+    "productId": "p-krem-seramid-lumen",
+    "author": "Deniz A.",
+    "rating": 5,
+    "comment": "Kışın kuruyan yanaklarım için kurtarıcı oldu, ağır da durmuyor.",
+    "date": "2026-09-01"
+  },
+  {
+    "productId": "p-gunes-mineral-solara",
+    "author": "Zeynep K.",
+    "rating": 4,
+    "comment": "Beyazlık bırakmıyor ama gün ortasında tazelemek gerekiyor.",
+    "date": "2026-08-20"
+  },
+  {
+    "productId": "p-gunes-mineral-solara",
+    "author": "Mert Y.",
+    "rating": 5,
+    "comment": "Gözümü yakmayan tek güneş kremi.",
+    "date": "2026-09-28"
+  },
+  {
+    "productId": "p-serum-retinol-aurora",
+    "author": "Elif S.",
+    "rating": 4,
+    "comment": "İlk iki hafta hafif soyulma yaptı, haftada üç akşama indirince geçti.",
+    "date": "2026-09-22"
+  },
+  {
+    "productId": "p-tonik-bha-clarity",
+    "author": "Mert Y.",
+    "rating": 5,
+    "comment": "Burnumdaki siyah noktalar azaldı. Retinolle aynı akşam kullanmıyorum.",
+    "date": "2026-10-05"
+  },
+  {
+    "productId": "p-serum-niacinamide-clarity",
+    "author": "Zeynep K.",
+    "rating": 4,
+    "comment": "Yağlanmayı azalttı. Üstüne nemlendirici sürünce topaklanmıyor.",
+    "date": "2026-10-09"
+  },
+  {
+    "productId": "p-maske-kil-terra",
+    "author": "Deniz A.",
+    "rating": 2,
+    "comment": "Kokusu çok ağır, iki kullanımda kaşıntı yaptı.",
+    "date": "2026-10-15"
+  },
+  {
+    "productId": "p-serum-hyaluronik-aurora",
+    "author": "Elif S.",
+    "rating": 5,
+    "comment": "Nemli cilde sürünce çok iyi emiliyor, makyaj altı da güzel.",
+    "date": "2026-10-18"
+  }
+]

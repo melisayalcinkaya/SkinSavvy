@@ -6,7 +6,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from .config import Settings
-from .models import Product, RefreshToken, Review, User, new_id
+from .models import Product, ProductStatus, RefreshToken, Review, User, new_id
 from .schemas import ProductOut, ReviewOut, SkinProfile, TokensOut, UserOut
 from .security import create_access_token, new_refresh_token, token_digest
 
@@ -70,20 +70,17 @@ def rating_stats(db: Session, product_ids: list[str]) -> dict[str, tuple[float, 
 
 
 def product_out(p: Product, stats: tuple[float, int] | None = None, *, owner_view: bool = False) -> ProductOut:
+    # Puan yalnızca gerçek yorumlardan hesaplanır; katalogda sabit puan yok.
     total, count = stats or (0.0, 0)
-    seed_total = p.seed_rating * p.seed_review_count
-    all_count = p.seed_review_count + count
-    rating = round((seed_total + total) / all_count, 1) if all_count else 0.0
+    approved = p.status == ProductStatus.approved and p.reviewed_at is not None
     return ProductOut(
         id=p.id,
         name=p.name,
         brand=p.brand,
         category=p.category,
         image_url=p.image_url,
-        price=p.price,
-        rating=rating,
-        review_count=all_count,
-        badge=p.badge,
+        rating=round(total / count, 1) if count else 0.0,
+        review_count=count,
         ingredients=p.ingredients,
         benefits=p.benefits,
         skin_types=p.skin_types,
@@ -91,13 +88,21 @@ def product_out(p: Product, stats: tuple[float, int] | None = None, *, owner_vie
         barcode=p.barcode,
         status=p.status.value,
         reject_reason=p.reject_reason if owner_view else None,
+        added_by=p.added_by,
+        approved_at=as_utc(p.reviewed_at).date().isoformat() if approved else None,
+        created_at=as_utc(p.created_at).isoformat(),
     )
+
+
+def public_name(user: User) -> str:
+    """Ayşe Yılmaz → "Ayşe Y." (yorumlarda ve "Ekleyen" bilgisinde)."""
+    parts = user.name.split()
+    return parts[0] + (f" {parts[-1][0]}." if len(parts) > 1 else "")
 
 
 def review_out(r: Review, me: User | None) -> ReviewOut:
     # Yorumlarda e-posta gösterilmez; yalnızca ad ve soyadın baş harfi.
-    parts = r.user.name.split()
-    author = parts[0] + (f" {parts[-1][0]}." if len(parts) > 1 else "")
+    author = public_name(r.user)
     return ReviewOut(
         id=r.id,
         product_id=r.product_id,

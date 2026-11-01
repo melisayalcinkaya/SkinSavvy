@@ -13,8 +13,12 @@ def test_catalog_is_public_and_matches_seed(client):
     data = client.get("/products").json()
     assert data["total"] == len(load_catalog()) == 12
     first = next(p for p in data["items"] if p["id"] == "p-temizleyici-lumen")
-    assert first["rating"] == 4.8
-    assert first["reviewCount"] == 1240
+    # Katalogda sabit puan yok: iki topluluk yorumundan (5 ve 4).
+    assert first["rating"] == 4.5
+    assert first["reviewCount"] == 2
+    assert first["addedBy"] == "Zeynep K."
+    assert first["approvedAt"] == "2026-06-02"
+    assert "price" not in first and "badge" not in first
     assert first["status"] == "approved"
     assert first["rejectReason"] is None
 

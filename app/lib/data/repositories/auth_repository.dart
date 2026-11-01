@@ -62,7 +62,8 @@ class LocalAuthRepository implements AuthRepository {
     if (email == null) return null;
     final account = asMap(_accounts[email]);
     if (account.isEmpty) return null;
-    return AppUser.fromJson(asMap(account['user']));
+    final user = AppUser.fromJson(asMap(account['user']));
+    return user.isDemo ? user.copyWith(role: 'admin') : user;
   }
 
   @override
@@ -124,7 +125,8 @@ class LocalAuthRepository implements AuthRepository {
       await DemoSeed.writeData(_store, user.id, DateTime.now());
     }
     await _store.write(_sessionKey, DemoSeed.email);
-    return user;
+    // Eski sürümde kaydedilmiş demo hesabında rol yoktu.
+    return user.copyWith(role: 'admin');
   }
 
   @override

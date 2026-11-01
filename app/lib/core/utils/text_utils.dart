@@ -28,7 +28,3 @@ String searchKey(String value) => value
     .replaceAll('ö', 'o')
     .replaceAll('ç', 'c')
     .trim();
-
-/// 299.9 → "₺299,90"
-String formatPrice(double? value) =>
-    value == null ? '' : '₺${value.toStringAsFixed(2).replaceAll('.', ',')}';

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/text_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/user.dart';
 import '../../../domain/ingredients/ingredient_analyzer.dart';
@@ -333,7 +332,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   Widget _card(Product p, CatalogController catalog, Verdict verdict) {
     final fav = catalog.isFavorite(p.id);
-    final badge = p.isPending ? 'Onay bekliyor' : p.badge;
+    final badge = p.isPending
+        ? 'Onay bekliyor'
+        : p.isNew(DateTime.now())
+        ? 'Yeni'
+        : null;
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -468,12 +471,16 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          formatPrice(p.price),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textDark,
+                        // Satış yok: fiyat yerine kategori.
+                        Flexible(
+                          child: Text(
+                            p.category,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textGrey,
+                            ),
                           ),
                         ),
                         Semantics(

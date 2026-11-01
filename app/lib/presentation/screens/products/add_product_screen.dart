@@ -9,6 +9,7 @@ import '../../../core/utils/image_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../data/remote/api_client.dart';
 import '../../../state/catalog_controller.dart';
+import '../../../state/session_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/analysis_card.dart';
@@ -17,31 +18,43 @@ import 'pending_approval_screen.dart';
 import 'product_detail_screen.dart';
 
 class AddProductScreen extends StatefulWidget {
-  const AddProductScreen({super.key, this.initialName = ''});
+  const AddProductScreen({super.key, this.initialName = '', this.resubmit});
 
   /// Arama kutusuna yazılan ad ("Ürün bulunamadı" ekranından gelince).
   final String initialName;
+
+  /// Reddedilen bir öneri: form onun bilgileriyle dolar, gönderilince
+  /// eski öneri yerine yenisi incelemeye girer.
+  final Product? resubmit;
   @override
   State<AddProductScreen> createState() => _AddProductScreenState();
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final _nameCtrl = TextEditingController(text: widget.initialName.trim());
-  final _brandCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
-  final _ingredientsCtrl = TextEditingController();
-  final _barcodeCtrl = TextEditingController();
+  late final Product? _old = widget.resubmit;
+  late final _nameCtrl = TextEditingController(
+    text: _old?.name ?? widget.initialName.trim(),
+  );
+  late final _brandCtrl = TextEditingController(text: _old?.brand);
+  late final _descCtrl = TextEditingController(text: _old?.description);
+  late final _ingredientsCtrl = TextEditingController(
+    text: _old?.ingredients.join(', '),
+  );
+  late final _barcodeCtrl = TextEditingController(text: _old?.barcode);
 
-  String? _selectedCategory;
-  final List<String> _selectedSkinTypes = [];
-  String? _imageData;
+  late String? _selectedCategory = _old?.category;
+  late final List<String> _selectedSkinTypes = [...?_old?.skinTypes];
+  late String? _imageData = (_old?.imageUrl.isEmpty ?? true)
+      ? null
+      : _old!.imageUrl;
   bool _isLoading = false;
   int _currentStep = 0;
 
   // Güvenlik: max karakter limitleri
-  static const int _maxNameLength = 100;
-  static const int _maxBrandLength = 100;
+  // Sunucudaki sınırlarla aynı (backend/app/schemas.py).
+  static const int _maxNameLength = 80;
+  static const int _maxBrandLength = 60;
   static const int _maxDescLength = 500;
   static const int _maxIngredientsLength = 2000;
 
@@ -103,8 +116,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     final catalog = context.read<CatalogController>();
-    final duplicate = catalog.findDuplicate(_nameCtrl.text, _brandCtrl.text);
-    if (duplicate != null) {
+    final duplicate = catalog.findDuplicate(
+      _nameCtrl.text,
+      _brandCtrl.text,
+      barcode: _barcodeCtrl.text,
+    );
+    if (duplicate != null && duplicate.id != _old?.id) {
       _showDuplicateWarning(duplicate.id);
       return;
     }
@@ -123,6 +140,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         description: _descCtrl.text,
         barcode: _barcodeCtrl.text,
         imageUrl: _imageData ?? '',
+        submitterName: context.read<SessionController>().user?.publicName,
+        replacing: _old?.id,
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -131,7 +150,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
     if (!mounted) return;
-    context.read<ShelfController>().addProduct(product);
+    final shelf = context.read<ShelfController>();
+    // Düzeltilen önerinin eski dolap kaydı yenisiyle değişir (çift olmasın).
+    final previous = _old == null ? null : shelf.activeForProduct(_old.id);
+    if (previous != null) shelf.remove(previous.id);
+    shelf.addProduct(product);
     setState(() => _isLoading = false);
     Navigator.pushReplacement(
       context,
@@ -449,7 +472,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       children: [
         _sectionTitle('Ürün Fotoğrafı (Opsiyonel)'),
         const Text(
-          'En fazla 5 MB • JPG veya PNG',
+          'En fazla $maxProductImageKb KB • JPG veya PNG',
           style: TextStyle(fontSize: 10, color: AppColors.textGrey),
         ),
         const SizedBox(height: 12),

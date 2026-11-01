@@ -20,6 +20,7 @@ abstract final class DemoSeed {
     bio: 'Karma cilt, leke ve sivilce odaklı rutin.',
     onboarded: true,
     isDemo: true,
+    role: 'admin',
     skinProfile: SkinProfile(
       skinType: 'Karma Cilt',
       concerns: {'Sivilce / Akne', 'Leke / Renk Eşitsizliği'},
@@ -56,7 +57,6 @@ abstract final class DemoSeed {
       category: p.category,
       imageUrl: p.imageUrl,
       ingredients: p.ingredients,
-      price: p.price,
       status: status,
       openedOn: openedOn,
       paoMonths: paoMonths,

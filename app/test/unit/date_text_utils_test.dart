@@ -44,11 +44,6 @@ void main() {
     );
   });
 
-  test('formatPrice', () {
-    expect(formatPrice(299.9), '₺299,90');
-    expect(formatPrice(null), '');
-  });
-
   group('parseIngredients', () {
     test('virgül, noktalı virgül ve satır sonuyla böler', () {
       expect(parseIngredients('Aqua, Glycerin;Niacinamide\nZinc PCA.'), [

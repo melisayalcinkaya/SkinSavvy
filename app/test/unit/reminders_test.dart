@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:skinsavvy_app/data/models/app_settings.dart';
+import 'package:skinsavvy_app/data/models/product.dart';
 import 'package:skinsavvy_app/data/models/routine.dart';
 import 'package:skinsavvy_app/data/models/shelf_item.dart';
 import 'package:skinsavvy_app/domain/reminders/reminders.dart';
@@ -192,6 +193,63 @@ void main() {
         ),
         isEmpty,
       );
+    });
+  });
+
+  group('öneri kararları', () {
+    const approved = Product(
+      id: 'p1',
+      name: 'Papatya Tonik',
+      brand: 'Bahçe',
+      category: 'Tonik',
+      status: ProductStatus.approved,
+    );
+    const rejected = Product(
+      id: 'p2',
+      name: 'Gül Suyu',
+      brand: 'Bahçe',
+      category: 'Tonik',
+      status: ProductStatus.rejected,
+      rejectReason: 'İçerik listesi eksik.',
+    );
+
+    test('onay ve ret önerene bildirilir; ret acil sayılır', () {
+      final r = buildReminders(
+        items: const [],
+        settings: const AppSettings(),
+        now: today,
+        decisions: const [approved, rejected],
+      );
+      expect(r.map((x) => x.kind), [
+        ReminderKind.submissionRejected,
+        ReminderKind.submissionApproved,
+      ]);
+      expect(r.first.detail, contains('İçerik listesi eksik.'));
+      expect(r.first.urgent, isTrue);
+      expect(r.last.urgent, isFalse);
+      expect(r.first.productId, 'p2');
+    });
+
+    test('"Ürün onaylandı" bildirimi kapatılabilir', () {
+      expect(
+        buildReminders(
+          items: const [],
+          settings: const AppSettings(productApproval: false),
+          now: today,
+          decisions: const [approved],
+        ),
+        isEmpty,
+      );
+    });
+
+    test('ekibe onay kuyruğu hatırlatılır', () {
+      final r = buildReminders(
+        items: const [],
+        settings: const AppSettings(),
+        now: today,
+        reviewQueue: 3,
+      );
+      expect(r.single.title, '3 ürün onay bekliyor');
     });
   });
 }

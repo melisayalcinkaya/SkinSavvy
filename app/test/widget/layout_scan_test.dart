@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:skinsavvy_app/presentation/screens/collections/edit_product_screen.dart';
+import 'package:skinsavvy_app/presentation/screens/moderation/moderation_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/products/add_product_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/products/product_detail_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/profile/edit_profile_screen.dart';
@@ -101,6 +102,9 @@ void main() {
         await scroll(tester);
         await back(tester, screen);
       }
+      await tapText(tester, 'Onay Bekleyen Ürünler');
+      expect(find.byType(ModerationScreen), findsOneWidget);
+      await back(tester, ModerationScreen);
       await tapFinder(tester, find.byTooltip('Cilt profilini düzenle'));
       expect(find.byType(EditSkinProfileScreen), findsOneWidget);
       await scroll(tester);

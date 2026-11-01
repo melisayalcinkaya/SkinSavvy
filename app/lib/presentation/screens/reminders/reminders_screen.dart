@@ -4,10 +4,13 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/routine.dart';
 import '../../../domain/reminders/reminders.dart';
+import '../../../state/catalog_controller.dart';
 import '../../../state/routine_controller.dart';
 import '../../../state/settings_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../collections/edit_product_screen.dart';
+import '../moderation/moderation_screen.dart';
+import '../products/product_detail_screen.dart';
 import '../profile/notifications_screen.dart';
 
 /// Dolap, rutin ve bildirim ayarlarından o anki hatırlatmaları üretir ve
@@ -16,11 +19,14 @@ List<Reminder> watchReminders(BuildContext context, {DateTime? now}) {
   final shelf = context.watch<ShelfController>();
   final routine = context.watch<RoutineController>();
   final settings = context.watch<SettingsController>().settings;
+  final catalog = context.watch<CatalogController>();
   final at = now ?? DateTime.now();
   return buildReminders(
     items: shelf.using,
     settings: settings,
     now: at,
+    decisions: catalog.unseenDecisions,
+    reviewQueue: catalog.reviewQueue.length,
     routine: [
       for (final slot in RoutineSlot.values)
         (
@@ -184,6 +190,21 @@ class _ReminderTile extends StatelessWidget {
       fg: const Color(0xFFB4651F),
       bg: const Color(0xFFFFF3E3),
     ),
+    ReminderKind.submissionRejected => (
+      icon: Icons.report_gmailerrorred_outlined,
+      fg: AppColors.accent,
+      bg: const Color(0xFFFFEEE8),
+    ),
+    ReminderKind.submissionApproved => (
+      icon: Icons.verified_outlined,
+      fg: AppColors.primary,
+      bg: AppColors.lightGreen,
+    ),
+    ReminderKind.reviewQueue => (
+      icon: Icons.fact_check_outlined,
+      fg: AppColors.primary,
+      bg: AppColors.lightGreen,
+    ),
     ReminderKind.routineDue => (
       icon: r.slot == RoutineSlot.morning
           ? Icons.wb_sunny_outlined
@@ -199,6 +220,25 @@ class _ReminderTile extends StatelessWidget {
   };
 
   void _open(BuildContext context) {
+    if (r.kind == ReminderKind.reviewQueue) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ModerationScreen()),
+      );
+      return;
+    }
+    final productId = r.productId;
+    if (productId != null) {
+      // Karar görüldü: bildirim kalkar, ürün (reddedildiyse gerekçesiyle) açılır.
+      context.read<CatalogController>().markDecisionSeen(productId);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailScreen(productId: productId),
+        ),
+      );
+      return;
+    }
     final id = r.shelfItemId;
     if (id == null) {
       // Rutin hatırlatması: rutin sekmesine dön.

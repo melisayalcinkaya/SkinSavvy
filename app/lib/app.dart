@@ -72,13 +72,37 @@ class _SkinSavvyAppState extends State<SkinSavvyApp> {
           (uid) => ShelfController(store, uid),
           (c) => c.uid,
         ),
-        _perUser<CatalogController>(
-          (uid) => CatalogController(store, uid, api: api),
-          (c) => c.uid,
-        ),
         _perUser<ReviewController>(
           (uid) => ReviewController(store, uid, api: api),
           (c) => c.uid,
+        ),
+        // Katalog, puanları kullanıcının yorumlarıyla birlikte hesaplar ve
+        // yöneticiyse onay kuyruğunu da yükler.
+        ChangeNotifierProxyProvider2<
+          SessionController,
+          ReviewController,
+          CatalogController
+        >(
+          create: (context) => CatalogController(
+            store,
+            widget.session.user?.id,
+            api: api,
+            isAdmin: widget.session.user?.isAdmin ?? false,
+            reviews: context.read<ReviewController>(),
+          ),
+          update: (_, session, reviews, previous) =>
+              previous != null &&
+                  previous.uid == session.user?.id &&
+                  previous.isAdmin == (session.user?.isAdmin ?? false) &&
+                  identical(previous.reviews, reviews)
+              ? previous
+              : CatalogController(
+                  store,
+                  session.user?.id,
+                  api: api,
+                  isAdmin: session.user?.isAdmin ?? false,
+                  reviews: reviews,
+                ),
         ),
         ChangeNotifierProxyProvider2<
           SessionController,

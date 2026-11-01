@@ -5,10 +5,8 @@
     "brand": "Lumen Lab",
     "category": "Temizleyici",
     "imageUrl": "assets/images/products/temizleyici-lumen.png",
-    "price": 289.9,
-    "rating": 4.8,
-    "reviewCount": 1240,
-    "badge": "Popüler",
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Glycerin",
@@ -33,7 +31,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Zeynep K.",
+    "approvedAt": "2026-06-02"
   },
   {
     "id": "p-serum-c-aurora",
@@ -41,10 +41,8 @@
     "brand": "Aurora Botanics",
     "category": "Serum",
     "imageUrl": "assets/images/products/serum-c-aurora.png",
-    "price": 449.9,
-    "rating": 4.6,
-    "reviewCount": 2150,
-    "badge": "Çok Satan",
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Ascorbic Acid",
@@ -67,7 +65,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Deniz A.",
+    "approvedAt": "2026-06-15"
   },
   {
     "id": "p-krem-seramid-lumen",
@@ -75,10 +75,8 @@
     "brand": "Lumen Lab",
     "category": "Nemlendirici",
     "imageUrl": "assets/images/products/krem-seramid-lumen.png",
-    "price": 349.9,
-    "rating": 4.7,
-    "reviewCount": 890,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Glycerin",
@@ -103,7 +101,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Elif S.",
+    "approvedAt": "2026-07-01"
   },
   {
     "id": "p-gunes-mineral-solara",
@@ -111,10 +111,8 @@
     "brand": "Solara",
     "category": "Güneş Kremi",
     "imageUrl": "assets/images/products/gunes-mineral-solara.png",
-    "price": 389.9,
-    "rating": 4.5,
-    "reviewCount": 1580,
-    "badge": "Önerilen",
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Zinc Oxide",
@@ -135,7 +133,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Mert Y.",
+    "approvedAt": "2026-07-20"
   },
   {
     "id": "p-serum-retinol-aurora",
@@ -143,10 +143,8 @@
     "brand": "Aurora Botanics",
     "category": "Serum",
     "imageUrl": "assets/images/products/serum-retinol-aurora.png",
-    "price": 529.9,
-    "rating": 4.6,
-    "reviewCount": 760,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Squalane",
       "Caprylic/Capric Triglyceride",
@@ -165,7 +163,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Zeynep K.",
+    "approvedAt": "2026-08-04"
   },
   {
     "id": "p-tonik-bha-clarity",
@@ -173,10 +173,8 @@
     "brand": "Clarity Co.",
     "category": "Tonik",
     "imageUrl": "assets/images/products/tonik-bha-clarity.png",
-    "price": 319.9,
-    "rating": 4.7,
-    "reviewCount": 1325,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Salicylic Acid",
@@ -195,7 +193,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Deniz A.",
+    "approvedAt": "2026-08-22"
   },
   {
     "id": "p-serum-niacinamide-clarity",
@@ -203,10 +203,8 @@
     "brand": "Clarity Co.",
     "category": "Serum",
     "imageUrl": "assets/images/products/serum-niacinamide-clarity.png",
-    "price": 299.9,
-    "rating": 4.5,
-    "reviewCount": 2840,
-    "badge": "Çok Satan",
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Niacinamide",
@@ -227,7 +225,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Elif S.",
+    "approvedAt": "2026-09-05"
   },
   {
     "id": "p-tonik-aha-lumen",
@@ -235,10 +235,8 @@
     "brand": "Lumen Lab",
     "category": "Peeling",
     "imageUrl": "assets/images/products/tonik-aha-lumen.png",
-    "price": 279.9,
-    "rating": 4.3,
-    "reviewCount": 640,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Glycolic Acid",
@@ -258,7 +256,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Mert Y.",
+    "approvedAt": "2026-09-19"
   },
   {
     "id": "p-maske-kil-terra",
@@ -266,10 +266,8 @@
     "brand": "Terra Verde",
     "category": "Maske",
     "imageUrl": "assets/images/products/maske-kil-terra.png",
-    "price": 189.9,
-    "rating": 4.4,
-    "reviewCount": 410,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Kaolin",
       "Bentonite",
@@ -290,7 +288,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Zeynep K.",
+    "approvedAt": "2026-10-03"
   },
   {
     "id": "p-serum-hyaluronik-aurora",
@@ -298,10 +298,8 @@
     "brand": "Aurora Botanics",
     "category": "Serum",
     "imageUrl": "assets/images/products/serum-hyaluronik-aurora.png",
-    "price": 259.9,
-    "rating": 4.8,
-    "reviewCount": 1960,
-    "badge": "Popüler",
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Sodium Hyaluronate",
@@ -320,7 +318,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Deniz A.",
+    "approvedAt": "2026-10-12"
   },
   {
     "id": "p-temizleyici-yag-terra",
@@ -328,10 +328,8 @@
     "brand": "Terra Verde",
     "category": "Temizleyici",
     "imageUrl": "assets/images/products/temizleyici-yag-terra.png",
-    "price": 239.9,
-    "rating": 4.4,
-    "reviewCount": 530,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Helianthus Annuus Seed Oil",
       "Caprylic/Capric Triglyceride",
@@ -350,7 +348,9 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Elif S.",
+    "approvedAt": "2026-10-21"
   },
   {
     "id": "p-nemlendirici-jel-clarity",
@@ -358,10 +358,8 @@
     "brand": "Clarity Co.",
     "category": "Nemlendirici",
     "imageUrl": "assets/images/products/nemlendirici-jel-clarity.png",
-    "price": 269.9,
-    "rating": 4.6,
-    "reviewCount": 980,
-    "badge": null,
+    "rating": 0.0,
+    "reviewCount": 0,
     "ingredients": [
       "Aqua",
       "Glycerin",
@@ -383,6 +381,8 @@
     ],
     "description": "",
     "barcode": null,
-    "status": "approved"
+    "status": "approved",
+    "addedBy": "Mert Y.",
+    "approvedAt": "2026-10-27"
   }
 ]

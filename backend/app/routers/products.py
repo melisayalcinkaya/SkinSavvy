@@ -9,7 +9,7 @@ from ..deps import CurrentUser, DbDep, LimiterDep, OptionalUser, SettingsDep
 from ..models import Product, ProductStatus, Review, User
 from ..schemas import ProductIn, ProductOut, ProductPage, ReviewIn, ReviewOut, check_image
 from ..security import search_key
-from ..services import product_out, rating_stats, review_out
+from ..services import product_out, public_name, rating_stats, review_out
 
 router = APIRouter(prefix="/products", tags=["Ürünler"])
 
@@ -99,6 +99,7 @@ def submit_product(
         image_url=image,
         status=ProductStatus.pending,
         submitted_by=user.id,
+        added_by=public_name(user),
     )
     db.add(p)
     db.commit()

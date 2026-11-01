@@ -6,6 +6,10 @@ import '../../core/utils/date_utils.dart';
 import '../../data/models/json.dart';
 import '../../data/remote/api_client.dart';
 import '../../state/catalog_controller.dart';
+import '../../data/demo/demo_reviews.dart';
+import '../screens/products/add_product_screen.dart';
+import '../../state/review_controller.dart';
+import '../../data/models/product.dart';
 
 /// Sunucu modunda katalog yüklenirken ya da yüklenemediğinde gösterilir.
 class CatalogStatusBanner extends StatelessWidget {
@@ -59,49 +63,63 @@ class CatalogStatusBanner extends StatelessWidget {
   }
 }
 
-/// Reddedilen önerinin gerekçesi (yalnızca öneren görür).
+/// Reddedilen önerinin gerekçesi (yalnızca öneren görür) ve düzeltme düğmesi.
 class RejectedNotice extends StatelessWidget {
-  const RejectedNotice({super.key, required this.reason});
+  const RejectedNotice({super.key, required this.product});
 
-  final String? reason;
+  final Product product;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(13),
-    decoration: BoxDecoration(
-      color: const Color(0xFFFFEEE8),
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Önerin onaylanmadı',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.accent,
+  Widget build(BuildContext context) {
+    final reason = product.rejectReason;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(13, 13, 13, 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEEE8),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Önerin onaylanmadı',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          reason == null || reason!.isEmpty
-              ? 'Yönetici bir gerekçe yazmadı.'
-              : 'Gerekçe: $reason',
-          style: const TextStyle(fontSize: 12, color: AppColors.textDark),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          'Bilgileri düzeltip ürünü yeniden önerebilirsin.',
-          style: TextStyle(fontSize: 11, color: AppColors.textGrey),
-        ),
-      ],
-    ),
-  );
+          const SizedBox(height: 4),
+          Text(
+            reason == null || reason.isEmpty
+                ? 'Ekip bir gerekçe yazmadı.'
+                : 'Gerekçe: $reason',
+            style: const TextStyle(fontSize: 12, color: AppColors.textDark),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AddProductScreen(resubmit: product),
+                ),
+              ),
+              icon: const Icon(Icons.edit_outlined, size: 15),
+              label: const Text('Düzeltip yeniden gönder'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// Ürün detayında diğer kullanıcıların yorumları (sunucu modu).
+/// Ürün detayında kullanıcı yorumları.
+///
+/// Sunucu modunda API'den, cihaz modunda topluluk yorumlarından
+/// ([demoReviews]) gelir; kullanıcının kendi yorumu "Sen" olarak en üstte.
 class CommunityReviews extends StatefulWidget {
   const CommunityReviews({super.key, required this.productId});
 
@@ -118,7 +136,7 @@ class _CommunityReviewsState extends State<CommunityReviews> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final api = context.read<ApiClient?>();
-    _future ??= api == null ? null : _load(api);
+    if (api != null) _future ??= _load(api);
   }
 
   Future<List<Map<String, dynamic>>> _load(ApiClient api) async {
@@ -129,54 +147,85 @@ class _CommunityReviewsState extends State<CommunityReviews> {
     return [for (final r in data as List) asMap(r)];
   }
 
+  /// Cihaz modu: kendi yorumun + topluluk yorumları (yeniden eskiye).
+  List<Map<String, dynamic>> _local(BuildContext context) {
+    final mine = context.watch<ReviewController>().forProduct(widget.productId);
+    final community = context.read<CatalogController>().communityReviews(
+      widget.productId,
+    )..sort((a, b) => b.date.compareTo(a.date));
+    return [
+      if (mine != null)
+        {
+          'mine': true,
+          'rating': mine.rating,
+          'comment': mine.comment,
+          'createdAt': (mine.updatedAt ?? mine.createdAt).toIso8601String(),
+        },
+      for (final r in community)
+        {
+          'author': r.author,
+          'rating': r.rating,
+          'comment': r.comment,
+          'createdAt': r.date,
+        },
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final future = _future;
-    if (future == null) return const SizedBox.shrink();
+    if (future == null) return _box(items: _local(context));
     return FutureBuilder(
       future: future,
-      builder: (context, snap) {
-        final items = snap.data ?? const [];
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(top: 10),
-          padding: const EdgeInsets.all(13),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Kullanıcı yorumları',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 6),
-              if (snap.connectionState != ConnectionState.done)
-                const LinearProgressIndicator(color: AppColors.primary)
-              else if (snap.hasError)
-                Text(
-                  '${snap.error}',
-                  style: const TextStyle(fontSize: 11, color: AppColors.accent),
-                )
-              else if (items.isEmpty)
-                const Text(
-                  'Henüz yorum yok. İlk yorumu sen yaz.',
-                  style: TextStyle(fontSize: 11, color: AppColors.textGrey),
-                )
-              else
-                for (final r in items) _ReviewRow(r),
-            ],
-          ),
-        );
-      },
+      builder: (context, snap) => _box(
+        items: snap.data ?? const [],
+        loading: snap.connectionState != ConnectionState.done,
+        error: snap.hasError ? '${snap.error}' : null,
+      ),
     );
   }
+
+  Widget _box({
+    required List<Map<String, dynamic>> items,
+    bool loading = false,
+    String? error,
+  }) => Container(
+    width: double.infinity,
+    margin: const EdgeInsets.only(top: 10),
+    padding: const EdgeInsets.all(13),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Kullanıcı yorumları',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
+          ),
+        ),
+        const SizedBox(height: 6),
+        if (loading)
+          const LinearProgressIndicator(color: AppColors.primary)
+        else if (error != null)
+          Text(
+            error,
+            style: const TextStyle(fontSize: 11, color: AppColors.accent),
+          )
+        else if (items.isEmpty)
+          const Text(
+            'Henüz yorum yok. Ürünü dolabına ekleyip ilk yorumu sen yaz.',
+            style: TextStyle(fontSize: 11, color: AppColors.textGrey),
+          )
+        else
+          for (final r in items) _ReviewRow(r),
+      ],
+    ),
+  );
 }
 
 class _ReviewRow extends StatelessWidget {
@@ -196,14 +245,17 @@ class _ReviewRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                asBool(r['mine'])
-                    ? 'Sen'
-                    : asString(r['author']) ?? 'Kullanıcı',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+              Flexible(
+                child: Text(
+                  asBool(r['mine'])
+                      ? 'Sen'
+                      : asString(r['author']) ?? 'Kullanıcı',
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
                 ),
               ),
               const SizedBox(width: 6),

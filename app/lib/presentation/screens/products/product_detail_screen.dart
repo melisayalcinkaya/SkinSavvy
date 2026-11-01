@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/text_utils.dart';
+import '../../../core/utils/date_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
@@ -31,7 +31,9 @@ class ProductDetailScreen extends StatelessWidget {
         ? 'Onay bekliyor'
         : p.isRejected
         ? 'Onaylanmadı'
-        : p.badge;
+        : p.isNew(DateTime.now())
+        ? 'Yeni'
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -173,18 +175,44 @@ class ProductDetailScreen extends StatelessWidget {
                                   color: AppColors.textGrey,
                                 ),
                               ),
-                              const Spacer(),
-                            ],
-                            Text(
-                              formatPrice(p.price),
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textDark,
+                            ] else
+                              const Text(
+                                'Henüz değerlendirme yok',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textGrey,
+                                ),
                               ),
-                            ),
                           ],
                         ),
+                        if (p.addedBy != null || p.approvedDate != null) ...[
+                          const SizedBox(height: 6),
+                          // Ürünü topluluktan biri ekledi, ekip onayladı.
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.groups_outlined,
+                                size: 14,
+                                color: AppColors.textLight,
+                              ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Text(
+                                  [
+                                    if (p.addedBy != null)
+                                      'Ekleyen: ${p.addedBy}',
+                                    if (p.approvedDate != null)
+                                      'onay: ${formatDateShort(p.approvedDate)}',
+                                  ].join(' · '),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textLight,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                         if (p.skinTypes.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           Wrap(
@@ -229,7 +257,7 @@ class ProductDetailScreen extends StatelessWidget {
                         ],
                         if (p.isRejected) ...[
                           const SizedBox(height: 10),
-                          RejectedNotice(reason: p.rejectReason),
+                          RejectedNotice(product: p),
                         ],
                         const SizedBox(height: 10),
                         AnalysisCard(

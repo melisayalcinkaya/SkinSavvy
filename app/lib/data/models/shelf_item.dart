@@ -23,7 +23,6 @@ class ShelfItem {
     this.rating = 0,
     this.note = '',
     this.isFavorite = false,
-    this.price,
     this.wouldRebuy,
     this.finishedOn,
     this.ingredients = const [],
@@ -56,7 +55,6 @@ class ShelfItem {
   final int rating;
   final String note;
   final bool isFavorite;
-  final double? price;
   final bool? wouldRebuy;
   final DateTime? finishedOn;
   final List<String> ingredients;
@@ -91,7 +89,6 @@ class ShelfItem {
     int? rating,
     String? note,
     bool? isFavorite,
-    double? price,
     bool? wouldRebuy,
     DateTime? finishedOn,
     List<String>? ingredients,
@@ -112,7 +109,6 @@ class ShelfItem {
     rating: rating ?? this.rating,
     note: note ?? this.note,
     isFavorite: isFavorite ?? this.isFavorite,
-    price: price ?? this.price,
     wouldRebuy: wouldRebuy ?? this.wouldRebuy,
     finishedOn: finishedOn ?? this.finishedOn,
     ingredients: ingredients ?? this.ingredients,
@@ -136,7 +132,6 @@ class ShelfItem {
     'rating': rating,
     'note': note,
     'isFavorite': isFavorite,
-    'price': price,
     'wouldRebuy': wouldRebuy,
     'finishedOn': finishedOn?.toIso8601String(),
     'ingredients': ingredients,
@@ -160,7 +155,6 @@ class ShelfItem {
     rating: asInt(j['rating']).clamp(0, 5),
     note: asString(j['note']) ?? '',
     isFavorite: asBool(j['isFavorite']),
-    price: asDouble(j['price']),
     wouldRebuy: j['wouldRebuy'] is bool ? j['wouldRebuy'] as bool : null,
     finishedOn: asDate(j['finishedOn']),
     ingredients: asStringList(j['ingredients']),

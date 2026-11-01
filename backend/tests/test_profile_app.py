@@ -66,6 +66,7 @@ def test_profile_validation(api, client, profile):
 
 def test_delete_account_removes_private_data_keeps_approved_products(api, client, app):
     h = api.user()
+    user_id = client.get("/me", headers=h).json()["id"]
     pending = api.submit(h).json()["id"]
     approved = api.submit(h, name="Onaylı Krem", category="Nemlendirici").json()["id"]
     client.post(f"/admin/submissions/{approved}/approve", headers=api.admin())
@@ -76,7 +77,8 @@ def test_delete_account_removes_private_data_keeps_approved_products(api, client
     with app.state.db.sessions() as s:
         assert s.get(Product, pending) is None
         assert s.get(Product, approved).submitted_by is None
-        assert s.query(Review).count() == 0
+        assert s.query(Review).filter_by(user_id=user_id).count() == 0
+        assert s.query(Review).count() == 12  # topluluk yorumları yerinde
         assert s.query(User).filter_by(email="ayse@test.dev").count() == 0
     assert client.post("/auth/login", json={"email": "ayse@test.dev", "password": PASSWORD}).status_code == 401
 
@@ -96,7 +98,9 @@ def test_seed_is_idempotent_and_admin_optional():
         seed(s, app.state.settings)
         seed(s, app.state.settings)
         assert s.query(Product).count() == 12
-        assert s.query(User).count() == 1
+        # demo hesabı + 4 topluluk yazarı; ikinci yükleme çoğaltmaz
+        assert s.query(User).count() == 5
+        assert s.query(Review).count() == 12
 
 
 def test_security_headers_and_cors(client):

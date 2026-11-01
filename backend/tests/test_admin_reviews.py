@@ -56,15 +56,16 @@ def test_review_upsert_and_rating(api, client):
     assert review["mine"] is True
     assert review["updatedAt"] is None
 
+    # Puan yalnızca gerçek yorumlardan: topluluktan 5 ve 4, Ayşe'den 1.
     product = client.get(f"/products/{PRODUCT}").json()
-    assert product["reviewCount"] == 1241
-    assert product["rating"] == round((4.8 * 1240 + 1) / 1241, 1)
+    assert product["reviewCount"] == 3
+    assert product["rating"] == round((5 + 4 + 1) / 3, 1)
 
     # Aynı kullanıcı ikinci kez yazarsa yorum güncellenir, yeni kayıt açılmaz.
     r = client.put(f"/products/{PRODUCT}/reviews/me", json={"rating": 5, "comment": "Fikrim değişti"}, headers=h)
     assert r.json()["id"] == review["id"]
     assert r.json()["updatedAt"] is not None
-    assert client.get(f"/products/{PRODUCT}").json()["reviewCount"] == 1241
+    assert client.get(f"/products/{PRODUCT}").json()["reviewCount"] == 3
 
 
 def test_reviews_list_hides_email_and_marks_mine(api, client):
@@ -74,7 +75,7 @@ def test_reviews_list_hides_email_and_marks_mine(api, client):
     client.put(f"/products/{PRODUCT}/reviews/me", json={"rating": 3}, headers=b)
 
     listed = client.get(f"/products/{PRODUCT}/reviews", headers=b).json()
-    assert {r["author"] for r in listed} == {"Ayşe Y.", "Mehmet"}
+    assert {"Ayşe Y.", "Mehmet", "Zeynep K.", "Mert Y."} == {r["author"] for r in listed}
     assert [r["mine"] for r in listed if r["author"] == "Mehmet"] == [True]
     assert "test.dev" not in str(listed)
     assert client.get("/products/yok/reviews").status_code == 404
@@ -98,3 +99,22 @@ def test_delete_review_and_my_reviews(api, client):
     assert client.delete(f"/products/{PRODUCT}/reviews/me", headers=h).status_code == 204
     assert client.delete(f"/products/{PRODUCT}/reviews/me", headers=h).status_code == 404
     assert client.get("/me/reviews", headers=h).json() == []
+
+
+def test_approved_submission_shows_adder_and_date(api, client):
+    owner = api.user()
+    pid = api.submit(owner).json()["id"]
+    assert api.submit(owner, name="Başka Tonik").json()["approvedAt"] is None
+    client.post(f"/admin/submissions/{pid}/approve", headers=api.admin())
+    p = client.get(f"/products/{pid}").json()
+    assert p["addedBy"] == "Ayşe Y."
+    assert p["approvedAt"] is not None
+    assert p["rating"] == 0
+    assert p["reviewCount"] == 0
+    assert "price" not in p
+    assert "test.dev" not in str(p)
+
+
+def test_admin_role_is_visible_to_client(api, client):
+    assert client.get("/me", headers=api.admin()).json()["role"] == "admin"
+    assert client.get("/me", headers=api.user()).json()["role"] == "user"

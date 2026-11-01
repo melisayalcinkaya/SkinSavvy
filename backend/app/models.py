@@ -78,8 +78,6 @@ class Product(Base):
     brand_key: Mapped[str] = mapped_column(String(60))
     category: Mapped[str] = mapped_column(String(40))
     image_url: Mapped[str] = mapped_column(Text, default="")
-    price: Mapped[float | None] = mapped_column(default=None)
-    badge: Mapped[str | None] = mapped_column(String(30), default=None)
     ingredients: Mapped[list] = mapped_column(JSON, default=list)
     benefits: Mapped[list] = mapped_column(JSON, default=list)
     skin_types: Mapped[list] = mapped_column(JSON, default=list)
@@ -88,9 +86,9 @@ class Product(Base):
     status: Mapped[ProductStatus] = mapped_column(
         Enum(ProductStatus, native_enum=False), default=ProductStatus.pending, index=True
     )
-    # Demo kataloğundaki başlangıç puanı; gerçek yorumlarla birleştirilir.
-    seed_rating: Mapped[float] = mapped_column(default=0)
-    seed_review_count: Mapped[int] = mapped_column(default=0)
+    # Katalogda "Ekleyen: Zeynep K." olarak görünen ad. Öneri anında
+    # yazılır; e-posta asla saklanmaz/gösterilmez.
+    added_by: Mapped[str | None] = mapped_column(String(60), default=None)
 
     submitted_by: Mapped[str | None] = mapped_column(
         ForeignKey("users.id", ondelete="SET NULL"), index=True, default=None

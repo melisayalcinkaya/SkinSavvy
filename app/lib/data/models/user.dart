@@ -50,6 +50,7 @@ class AppUser {
     this.skinProfile = const SkinProfile(),
     this.onboarded = false,
     this.isDemo = false,
+    this.role = 'user',
   });
 
   final String id;
@@ -65,6 +66,20 @@ class AppUser {
   final bool onboarded;
   final bool isDemo;
 
+  /// "user" ya da "admin". Yönetici (SkinSavvy ekibi) önerilen ürünleri
+  /// onaylar veya reddeder. Cihaz modunda demo hesabı bu yetkiye sahiptir,
+  /// böylece onay akışı sunucusuz da denenebilir.
+  final String role;
+
+  bool get isAdmin => role == 'admin';
+
+  /// Yorumlarda ve "Ekleyen" bilgisinde görünen ad: "Ece D."
+  String get publicName {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length < 2) return parts.first;
+    return '${parts.first} ${String.fromCharCode(parts.last.runes.first)}.';
+  }
+
   String get firstName => name.trim().split(RegExp(r'\s+')).first;
 
   AppUser copyWith({
@@ -75,6 +90,7 @@ class AppUser {
     bool clearAvatar = false,
     SkinProfile? skinProfile,
     bool? onboarded,
+    String? role,
   }) => AppUser(
     id: id,
     name: name ?? this.name,
@@ -84,6 +100,7 @@ class AppUser {
     skinProfile: skinProfile ?? this.skinProfile,
     onboarded: onboarded ?? this.onboarded,
     isDemo: isDemo,
+    role: role ?? this.role,
   );
 
   Map<String, dynamic> toJson() => {
@@ -95,6 +112,7 @@ class AppUser {
     'skinProfile': skinProfile.toJson(),
     'onboarded': onboarded,
     'isDemo': isDemo,
+    'role': role,
   };
 
   factory AppUser.fromJson(Map<String, dynamic> j) => AppUser(
@@ -106,5 +124,6 @@ class AppUser {
     skinProfile: SkinProfile.fromJson(asMap(j['skinProfile'])),
     onboarded: asBool(j['onboarded']),
     isDemo: asBool(j['isDemo']),
+    role: asString(j['role']) == 'admin' ? 'admin' : 'user',
   );
 }

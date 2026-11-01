@@ -1,5 +1,6 @@
 import '../../core/utils/date_utils.dart';
 import '../../data/models/app_settings.dart';
+import '../../data/models/product.dart';
 import '../../data/models/routine.dart';
 import '../../data/models/shelf_item.dart';
 
@@ -35,7 +36,15 @@ ExpiryInfo? expiryInfo(ShelfItem item) {
   return ExpiryInfo(skt!, fromPao: false);
 }
 
-enum ReminderKind { expired, expiresSoon, routineDue, lowStock }
+enum ReminderKind {
+  expired,
+  expiresSoon,
+  submissionRejected,
+  submissionApproved,
+  reviewQueue,
+  routineDue,
+  lowStock,
+}
 
 class Reminder {
   const Reminder({
@@ -43,6 +52,7 @@ class Reminder {
     required this.title,
     required this.detail,
     this.shelfItemId,
+    this.productId,
     this.slot,
     this.daysLeft,
   });
@@ -51,15 +61,21 @@ class Reminder {
   final String title;
   final String detail;
   final String? shelfItemId;
+
+  /// Öneri kararlarında katalogdaki ürün.
+  final String? productId;
   final RoutineSlot? slot;
   final int? daysLeft;
 
   /// Kullanıcıyı harekete geçirmesi gereken (rozet sayısına giren) türler.
   bool get urgent =>
-      kind == ReminderKind.expired || kind == ReminderKind.expiresSoon;
+      kind == ReminderKind.expired ||
+      kind == ReminderKind.expiresSoon ||
+      kind == ReminderKind.submissionRejected;
 
   /// Aynı hatırlatmanın kimliği (liste anahtarı ve testler için).
-  String get key => '${kind.name}:${shelfItemId ?? slot?.name ?? ''}';
+  String get key =>
+      '${kind.name}:${shelfItemId ?? productId ?? slot?.name ?? ''}';
 }
 
 /// O günkü bir rutin vaktinin durumu.
@@ -73,6 +89,8 @@ List<Reminder> buildReminders({
   required AppSettings settings,
   required DateTime now,
   List<SlotProgress> routine = const [],
+  List<Product> decisions = const [],
+  int reviewQueue = 0,
 }) {
   final today = dateOnly(now);
   final result = <Reminder>[];
@@ -127,6 +145,44 @@ List<Reminder> buildReminders({
         ),
       );
     }
+  }
+
+  // Önerilen ürünler için ekibin kararı (kullanıcı henüz görmediyse).
+  if (settings.productApproval) {
+    for (final p in decisions) {
+      if (p.isRejected) {
+        result.add(
+          Reminder(
+            kind: ReminderKind.submissionRejected,
+            title: '${p.name} onaylanmadı',
+            detail: p.rejectReason == null || p.rejectReason!.isEmpty
+                ? 'Önerin ekip tarafından onaylanmadı. Düzeltip yeniden gönderebilirsin.'
+                : 'Gerekçe: ${p.rejectReason} Düzeltip yeniden gönderebilirsin.',
+            productId: p.id,
+          ),
+        );
+      } else if (p.status == ProductStatus.approved) {
+        result.add(
+          Reminder(
+            kind: ReminderKind.submissionApproved,
+            title: '${p.name} onaylandı',
+            detail:
+                'Önerdiğin ürün artık herkesin kataloğunda. Katkın için teşekkürler!',
+            productId: p.id,
+          ),
+        );
+      }
+    }
+  }
+  if (reviewQueue > 0) {
+    result.add(
+      Reminder(
+        kind: ReminderKind.reviewQueue,
+        title: '$reviewQueue ürün onay bekliyor',
+        detail:
+            'Kullanıcıların önerdiği ürünleri inceleyip onayla ya da reddet.',
+      ),
+    );
   }
 
   final minutes = now.hour * 60 + now.minute;
