@@ -335,20 +335,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     ],
   );
 
-  Widget _daysSelector() => Row(
+  // Dar ekranda alt satıra geçsin diye Row yerine Wrap.
+  Widget _daysSelector() => Wrap(
+    spacing: 6,
+    runSpacing: 6,
+    crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       const Text(
         'Kaç gün önce:',
         style: TextStyle(fontSize: 11, color: AppColors.textGrey),
       ),
-      const SizedBox(width: 8),
       ...([7, 14, 30, 60].map((d) {
         final selected = _expiryWarningDays == d;
         return GestureDetector(
           onTap: () => setState(() => _expiryWarningDays = d),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.only(right: 6),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: selected ? AppColors.lightGreen : AppColors.cream,

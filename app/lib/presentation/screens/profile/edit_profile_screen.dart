@@ -284,18 +284,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     icon: Icons.shield_outlined,
     child: Column(
       children: [
-        _securityTile(
-          icon: Icons.lock_outline,
-          title: 'Şifre Değiştir',
-          subtitle: 'E-postana sıfırlama bağlantısı gönderilir',
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ForgotPasswordScreen(initialEmail: _user.email),
+        // E-posta gönderimi olmayan modda bu satır yanıltıcı olurdu.
+        if (context.read<SessionController>().supportsPasswordReset) ...[
+          _securityTile(
+            icon: Icons.lock_outline,
+            title: 'Şifre Değiştir',
+            subtitle: 'E-postana sıfırlama bağlantısı gönderilir',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ForgotPasswordScreen(initialEmail: _user.email),
+              ),
             ),
           ),
-        ),
-        const Divider(height: 1, color: AppColors.softGreen),
+          const Divider(height: 1, color: AppColors.softGreen),
+        ],
         _securityTile(
           icon: Icons.delete_outline,
           title: 'Hesabı Sil',
@@ -313,38 +316,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
     bool isDestructive = false,
-  }) => ListTile(
-    onTap: onTap,
-    contentPadding: EdgeInsets.zero,
-    leading: Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: isDestructive ? const Color(0xFFFFEEE8) : AppColors.lightGreen,
-        borderRadius: BorderRadius.circular(10),
+  }) => Material(
+    // Renkli kartın içinde dokunma efekti görünsün.
+    type: MaterialType.transparency,
+    child: ListTile(
+      onTap: onTap,
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isDestructive ? const Color(0xFFFFEEE8) : AppColors.lightGreen,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          size: 18,
+          color: isDestructive ? AppColors.accent : AppColors.primary,
+        ),
       ),
-      child: Icon(
-        icon,
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: isDestructive ? AppColors.accent : AppColors.textDark,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: isDestructive ? AppColors.accent : AppColors.textLight,
         size: 18,
-        color: isDestructive ? AppColors.accent : AppColors.primary,
       ),
-    ),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
-        color: isDestructive ? AppColors.accent : AppColors.textDark,
-      ),
-    ),
-    subtitle: Text(
-      subtitle,
-      style: const TextStyle(fontSize: 10, color: AppColors.textGrey),
-    ),
-    trailing: Icon(
-      Icons.chevron_right,
-      color: isDestructive ? AppColors.accent : AppColors.textLight,
-      size: 18,
     ),
   );
 

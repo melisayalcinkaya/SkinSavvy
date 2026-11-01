@@ -1004,16 +1004,20 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         ),
         const SizedBox(height: 12),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              formatPrice(it.price),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textDark,
+            Expanded(
+              child: Text(
+                formatPrice(it.price),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: AppGradients.primary,
@@ -1028,7 +1032,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                 ),
                 icon: const Icon(Icons.add, size: 14, color: Colors.white),
                 label: const Text(
-                  'Aldım, Kullanmaya Başla',
+                  'Kullanmaya Başla',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.white,

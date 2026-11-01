@@ -310,7 +310,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           // Geniş ekranda (tablet/web) daha çok sütun.
           crossAxisCount: (constraints.maxWidth / 190).floor().clamp(2, 5),
-          childAspectRatio: 0.72,
+          // Sabit oran dar ekranda (320 px) bilgi alanını 62 px'e düşürüp
+          // taşırıyordu; sabit yükseklikte bilgi alanı her genişlikte yeterli.
+          mainAxisExtent: 250,
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),

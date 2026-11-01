@@ -262,14 +262,18 @@ class _RoutineHomeScreenState extends State<RoutineHomeScreen> {
                             color: AppColors.primary,
                           ),
                           const SizedBox(width: 3),
-                          Text(
-                            entries.isEmpty
-                                ? time
-                                : '$time • $done/${entries.length} tamamlandı',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w500,
+                          Flexible(
+                            child: Text(
+                              entries.isEmpty
+                                  ? time
+                                  : '$time • $done/${entries.length} tamamlandı',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                         ],
