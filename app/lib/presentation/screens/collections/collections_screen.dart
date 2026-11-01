@@ -7,9 +7,11 @@ import '../../../core/utils/text_utils.dart';
 import '../../../data/models/routine.dart';
 import '../../../data/models/shelf_item.dart';
 import '../../../domain/ingredients/ingredient_analyzer.dart';
+import '../../../domain/reminders/reminders.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/review_controller.dart';
 import '../../../state/routine_controller.dart';
+import '../../../state/settings_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/app_snack.dart';
@@ -617,6 +619,12 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
         .where((f) => f.level == FindingLevel.avoid)
         .map((f) => f.title)
         .toList();
+    // SKT ile açılış + PAO'dan hangisi önce dolarsa.
+    final expiry = expiryInfo(it);
+    final daysLeft = expiry?.daysLeft(DateTime.now());
+    final warnDays = context.select<SettingsController, int>(
+      (s) => s.settings.expiryWarningDays,
+    );
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 12),
       padding: const EdgeInsets.all(14),
@@ -690,6 +698,20 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                         _chip(it.category),
                         if (pending)
                           _chip('Onay bekliyor', bg: AppColors.softGreen),
+                        if (daysLeft != null && daysLeft <= warnDays)
+                          _chip(
+                            daysLeft < 0
+                                ? 'Süresi doldu'
+                                : daysLeft == 0
+                                ? 'Bugün son gün'
+                                : '$daysLeft gün kaldı',
+                            bg: daysLeft < 0
+                                ? const Color(0xFFFFEEE8)
+                                : const Color(0xFFFFF3E3),
+                            fg: daysLeft < 0
+                                ? AppColors.accent
+                                : const Color(0xFFB4651F),
+                          ),
                         for (final title in avoid)
                           _chip(
                             '⚠ $title',
@@ -760,7 +782,7 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
               _detailItem(
                 Icons.event_busy_outlined,
                 'Son kullanma',
-                formatDateShort(it.expiresOn),
+                formatDateShort(expiry?.date),
               ),
               _detailItem(
                 Icons.inventory_2_outlined,

@@ -385,8 +385,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         SizedBox(width: 8),
         Expanded(
           child: Text(
-            'Bildirimlerin çalışması için cihaz bildirim izinlerinin açık olması gerekir. '
-            'Ayarlar > Uygulamalar > SkinSavvy > Bildirimler yolundan kontrol edebilirsiniz.',
+            'Hatırlatmalar uygulama içinde, Rutin sekmesindeki zil simgesinde görünür. '
+            'Son kullanma için ambalaj tarihi ile "açıldıktan sonra X ay" süresinden '
+            'hangisi önce dolarsa o esas alınır. Telefon bildirimleri sonraki sürümde.',
             style: TextStyle(
               fontSize: 11,
               color: AppColors.primary,

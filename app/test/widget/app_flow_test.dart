@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skinsavvy_app/presentation/screens/reminders/reminders_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/auth/login_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/main_navigation.dart';
 import 'package:skinsavvy_app/presentation/screens/onboarding/onboarding_flow.dart';
@@ -33,6 +34,14 @@ void main() {
     expect(find.text('Rutin uyarıları'), findsOneWidget);
     expect(find.text('Retinoid ve asit aynı vakitte'), findsOneWidget);
     expect(find.textContaining('Akşam · Pzt, Çar, Cum'), findsOneWidget);
+
+    // Zil: 166 gün önce açılan 6 aylık C vitamini serumu ve %15 kalan
+    // retinol serumu hatırlatılır.
+    await tapFinder(tester, find.byType(ReminderBell));
+    expect(find.text('Hatırlatmalar'), findsOneWidget);
+    expect(find.textContaining('gün kaldı'), findsWidgets);
+    expect(find.textContaining('bitmek üzere'), findsWidgets);
+    await tapFinder(tester, find.byTooltip('Geri'));
 
     // Ürün detayında profile göre içerik analizi.
     await tapText(tester, 'Ürünler');

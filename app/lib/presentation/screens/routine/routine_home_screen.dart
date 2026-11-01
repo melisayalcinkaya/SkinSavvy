@@ -11,6 +11,7 @@ import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
 import '../../widgets/routine_warnings_card.dart';
+import '../reminders/reminders_screen.dart';
 import 'routine_editor_screen.dart';
 import 'routine_item_detail_modal.dart';
 
@@ -106,7 +107,14 @@ class _RoutineHomeScreenState extends State<RoutineHomeScreen> {
                   ),
                 ],
               ),
-              Image.asset('assets/images/logo.png', width: 42, height: 42),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const ReminderBell(),
+                  const SizedBox(width: 6),
+                  Image.asset('assets/images/logo.png', width: 42, height: 42),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 12),
