@@ -10,6 +10,7 @@ import '../../../state/settings_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
+import '../../widgets/routine_warnings_card.dart';
 import 'routine_editor_screen.dart';
 import 'routine_item_detail_modal.dart';
 
@@ -56,6 +57,7 @@ class _RoutineHomeScreenState extends State<RoutineHomeScreen> {
                   children: [
                     _routineCard(RoutineSlot.morning, routine),
                     _routineCard(RoutineSlot.evening, routine),
+                    RoutineWarningsCard(warnings: routine.warnings),
                     _statsRow(routine, today),
                     _tipCard(today),
                   ],

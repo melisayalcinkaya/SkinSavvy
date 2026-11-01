@@ -5,8 +5,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/user.dart';
+import '../../../domain/ingredients/ingredient_analyzer.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/session_controller.dart';
+import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
 import '../shared/add_product_modal.dart';
 import 'add_product_screen.dart';
@@ -50,8 +52,19 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ...{for (final p in catalog.products) p.category},
     ];
     var results = catalog.search(query: query, category: category);
+    const analyzer = IngredientAnalyzer();
+    final analyses = {
+      for (final p in results) p.id: analyzer.analyze(p.ingredients, profile),
+    };
     if (onlySuitable) {
-      results = results.where((p) => suits(p, profile)).toList();
+      // Cilt tipine uygun ve alerjen içermeyenler, uyum puanına göre.
+      results =
+          results
+              .where((p) => suits(p, profile) && !analyses[p.id]!.hasAvoid)
+              .toList()
+            ..sort(
+              (a, b) => analyses[b.id]!.score.compareTo(analyses[a.id]!.score),
+            );
     }
 
     return Scaffold(
@@ -67,7 +80,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   children: [
                     if (query.isEmpty && profile.skinType != null)
                       _recommendBanner(profile),
-                    _grid(results, catalog),
+                    _grid(results, catalog, analyses),
                   ],
                 ),
               ),
@@ -184,7 +197,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   ),
                   Text(
                     onlySuitable
-                        ? 'Yalnızca cilt tipinize uygun ürünler gösteriliyor'
+                        ? 'Cilt tipine uygun, alerjen içermeyen ürünler; en uyumlusu önce'
                         : 'Cilt tipiniz: $subtitle',
                     style: const TextStyle(
                       fontSize: 10,
@@ -274,7 +287,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     ),
   );
 
-  Widget _grid(List<Product> items, CatalogController catalog) {
+  Widget _grid(
+    List<Product> items,
+    CatalogController catalog,
+    Map<String, IngredientAnalysis> analyses,
+  ) {
     if (items.isEmpty) return _emptyState();
     return LayoutBuilder(
       builder: (context, constraints) => GridView.builder(
@@ -289,12 +306,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
           mainAxisSpacing: 10,
         ),
         itemCount: items.length,
-        itemBuilder: (_, i) => _card(items[i], catalog),
+        itemBuilder: (_, i) =>
+            _card(items[i], catalog, analyses[items[i].id]!.verdict),
       ),
     );
   }
 
-  Widget _card(Product p, CatalogController catalog) {
+  Widget _card(Product p, CatalogController catalog, Verdict verdict) {
     final fav = catalog.isFavorite(p.id);
     final badge = p.isPending ? 'Onay bekliyor' : p.badge;
     return GestureDetector(
@@ -321,6 +339,13 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       radius: 0,
                     ),
                   ),
+                  if (verdict == Verdict.unsuitable ||
+                      verdict == Verdict.caution)
+                    Positioned(
+                      left: 6,
+                      bottom: 6,
+                      child: VerdictBadge(verdict, compact: true),
+                    ),
                   if (badge != null)
                     Positioned(
                       top: 6,

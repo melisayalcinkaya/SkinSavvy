@@ -6,6 +6,7 @@ import '../../../core/utils/text_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
+import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
 import '../shared/add_product_modal.dart';
 
@@ -209,7 +210,9 @@ class ProductDetailScreen extends StatelessWidget {
                           _infoCard('Faydaları', p.benefits),
                         ],
                         const SizedBox(height: 10),
-                        _ingredientsCard(p),
+                        AnalysisCard(
+                          analysis: analyzeForUser(context, p.ingredients),
+                        ),
                         const SizedBox(height: 16),
                         _addButton(context, p, inShelf),
                       ],
@@ -287,39 +290,6 @@ class ProductDetailScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _ingredientsCard(Product p) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(13),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'İçerik (${p.ingredients.length})',
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textDark,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          p.ingredients.isEmpty
-              ? 'İçerik bilgisi girilmemiş.'
-              : p.ingredients.join(', '),
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppColors.textGrey,
-            height: 1.6,
-          ),
-        ),
-      ],
-    ),
-  );
 
   Widget _infoCard(String title, List<String> items) => Container(
     width: double.infinity,

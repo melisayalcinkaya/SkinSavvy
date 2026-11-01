@@ -29,6 +29,17 @@ void main() {
     expect(find.text('Merhaba Ece 👋'), findsOneWidget);
     expect(find.text('Nem Dengesi Temizleyici'), findsWidgets);
 
+    // Demo rutininde BHA tonik (Pzt/Çar/Cum) ile retinol aynı akşamda.
+    expect(find.text('Rutin uyarıları'), findsOneWidget);
+    expect(find.text('Retinoid ve asit aynı vakitte'), findsOneWidget);
+    expect(find.textContaining('Akşam · Pzt, Çar, Cum'), findsOneWidget);
+
+    // Ürün detayında profile göre içerik analizi.
+    await tapText(tester, 'Ürünler');
+    await tapText(tester, 'Retinol %0.3 Gece Serumu');
+    expect(find.text('İçerik Analizi'), findsOneWidget);
+    await tapFinder(tester, find.byTooltip('Geri'));
+
     // Koleksiyon sekmesinde dolap ürünleri görünür.
     await tapText(tester, 'Koleksiyon');
     expect(find.text('Koleksiyonlarım'), findsOneWidget);

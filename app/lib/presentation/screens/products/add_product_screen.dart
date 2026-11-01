@@ -10,6 +10,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
+import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
 import 'pending_approval_screen.dart';
 import 'product_detail_screen.dart';
@@ -377,6 +378,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
               return 'Lütfen daha detaylı içerik listesi giriniz.';
             }
             return null;
+          },
+        ),
+        // Yazdıkça profile göre analiz: kullanıcı ürünü göndermeden önce
+        // kendi alerjenlerini ve uyarıları görür.
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _ingredientsCtrl,
+          builder: (context, value, _) {
+            final list = parseIngredients(value.text);
+            if (list.length < 2) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: AnalysisCard(
+                analysis: analyzeForUser(context, list),
+                showIngredients: false,
+              ),
+            );
           },
         ),
         const SizedBox(height: 14),

@@ -7,6 +7,7 @@ import '../../../core/utils/date_utils.dart';
 import '../../../data/models/routine.dart';
 import '../../../state/routine_controller.dart';
 import '../../../state/shelf_controller.dart';
+import '../../widgets/routine_warnings_card.dart';
 
 /// Bir vaktin (sabah/akşam) rutinini düzenler: her ürün için haftanın hangi
 /// günlerinde kullanılacağı. Değişiklikler anında kaydedilir.
@@ -109,6 +110,10 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                   ),
                 ],
               ),
+            ),
+            RoutineWarningsCard(
+              warnings: routine.warningsFor(widget.slot),
+              margin: const EdgeInsets.fromLTRB(14, 10, 14, 0),
             ),
             Expanded(
               child: using.isEmpty

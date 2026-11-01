@@ -4,6 +4,7 @@ import '../data/local/keys.dart';
 import '../data/models/json.dart';
 import '../data/models/routine.dart';
 import '../data/models/shelf_item.dart';
+import '../domain/ingredients/routine_advisor.dart';
 import 'shelf_controller.dart';
 import 'user_store.dart';
 
@@ -28,6 +29,13 @@ class RoutineController extends UserStore {
 
   /// Kayıt şişmesin diye bu kadar günden eski tamamlama bilgisi silinir.
   static const historyDays = 120;
+
+  /// Rutindeki ürünlerin birlikte oluşturduğu riskler (en önemlisi başta).
+  List<RoutineWarning> get warnings =>
+      const RoutineAdvisor().review(_entries, shelf.byId);
+
+  List<RoutineWarning> warningsFor(RoutineSlot slot) =>
+      warnings.where((w) => w.slot == null || w.slot == slot).toList();
 
   List<RoutineEntry> entries(RoutineSlot slot) =>
       _entries.where((e) => e.slot == slot).toList()

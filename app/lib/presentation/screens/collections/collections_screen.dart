@@ -6,10 +6,12 @@ import '../../../core/utils/date_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/models/routine.dart';
 import '../../../data/models/shelf_item.dart';
+import '../../../domain/ingredients/ingredient_analyzer.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/review_controller.dart';
 import '../../../state/routine_controller.dart';
 import '../../../state/shelf_controller.dart';
+import '../../widgets/analysis_card.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
 import '../profile/share_finished_screen.dart';
@@ -610,6 +612,11 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     final pending = context.select<CatalogController, bool>(
       (c) => c.byId(it.productId)?.isPending ?? false,
     );
+    // Profildeki bir alerjen bu üründe var mı?
+    final avoid = analyzeForUser(context, it.ingredients).findings
+        .where((f) => f.level == FindingLevel.avoid)
+        .map((f) => f.title)
+        .toList();
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 12),
       padding: const EdgeInsets.all(14),
@@ -683,6 +690,12 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                         _chip(it.category),
                         if (pending)
                           _chip('Onay bekliyor', bg: AppColors.softGreen),
+                        for (final title in avoid)
+                          _chip(
+                            '⚠ $title',
+                            bg: const Color(0xFFFFEEE8),
+                            fg: AppColors.accent,
+                          ),
                       ],
                     ),
                   ],
