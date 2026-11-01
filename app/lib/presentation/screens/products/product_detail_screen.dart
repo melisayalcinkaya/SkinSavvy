@@ -74,44 +74,57 @@ class ProductDetailScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  SizedBox(
-                    height: 220,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ProductImage(
-                          p.imageUrl,
-                          category: p.category,
-                          radius: 0,
-                        ),
-                        if (badge != null)
-                          Positioned(
-                            top: 10,
-                            left: 10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: p.isPending
-                                    ? null
-                                    : AppGradients.badge,
-                                color: p.isPending ? AppColors.secondary : null,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                badge,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+                  // Ürün görselleri kare; sabit 220 px yükseklik telefonda
+                  // görselin yarısını kırpıyordu. Telefonda yükseklik genişliğe
+                  // göre büyür, geniş ekranda görsel kırpılmadan ortalanır.
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      final wide = box.maxWidth > 600;
+                      return SizedBox(
+                        height: wide
+                            ? 360
+                            : (box.maxWidth * 0.85).clamp(260, 360),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ProductImage(
+                              p.imageUrl,
+                              category: p.category,
+                              radius: 0,
+                              fit: wide ? BoxFit.contain : BoxFit.cover,
+                            ),
+                            if (badge != null)
+                              Positioned(
+                                top: 10,
+                                left: 10,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: p.isPending
+                                        ? null
+                                        : AppGradients.badge,
+                                    color: p.isPending
+                                        ? AppColors.secondary
+                                        : null,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    badge,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16),
