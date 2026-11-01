@@ -32,13 +32,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
   static const int _maxImageSizeMB = 5;
 
   final List<String> _categories = [
-    'Temizleyici', 'Nemlendirici', 'Serum', 'Güneş Kremi',
-    'Maske', 'Tonik', 'Göz Kremi', 'Yağ', 'Peeling', 'Diğer',
+    'Temizleyici',
+    'Nemlendirici',
+    'Serum',
+    'Güneş Kremi',
+    'Maske',
+    'Tonik',
+    'Göz Kremi',
+    'Yağ',
+    'Peeling',
+    'Diğer',
   ];
 
   final List<String> _skinTypes = [
-    'Tüm Cilt Tipleri', 'Kuru Cilt', 'Yağlı Cilt',
-    'Karma Cilt', 'Normal Cilt', 'Hassas Cilt',
+    'Tüm Cilt Tipleri',
+    'Kuru Cilt',
+    'Yağlı Cilt',
+    'Karma Cilt',
+    'Normal Cilt',
+    'Hassas Cilt',
   ];
 
   @override
@@ -95,7 +107,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     setState(() {
       // Simülasyon: fotoğraf seçildi
     });
-    _showInfo('Fotoğraf seçici — gerçek uygulamada image_picker paketi kullanılacak.');
+    _showInfo(
+        'Fotoğraf seçici — gerçek uygulamada image_picker paketi kullanılacak.');
   }
 
   // ── Duplicate kontrol ──────────────────────────────────────
@@ -184,12 +197,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Ürün Zaten Mevcut', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-        content: const Text('Bu ürün sistemde zaten kayıtlı. Mevcut ürünü koleksiyonunuza ekleyebilirsiniz.', style: TextStyle(fontSize: 13, color: AppColors.textGrey)),
+        title: const Text('Ürün Zaten Mevcut',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark)),
+        content: const Text(
+            'Bu ürün sistemde zaten kayıtlı. Mevcut ürünü koleksiyonunuza ekleyebilirsiniz.',
+            style: TextStyle(fontSize: 13, color: AppColors.textGrey)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Geri Dön', style: TextStyle(color: AppColors.textGrey))),
-          TextButton(onPressed: () { Navigator.pop(context); Navigator.pop(context); },
-            child: const Text('Mevcut Ürüne Git', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600))),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Geri Dön',
+                  style: TextStyle(color: AppColors.textGrey))),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text('Mevcut Ürüne Git',
+                  style: TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.w600))),
         ],
       ),
     );
@@ -204,24 +232,43 @@ class _AddProductScreenState extends State<AddProductScreen> {
         final isDone = i < _currentStep;
         return Expanded(
           child: Row(children: [
-            Expanded(child: Column(children: [
+            Expanded(
+                child: Column(children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 28, height: 28,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   gradient: isActive || isDone ? AppGradients.primary : null,
                   color: isActive || isDone ? null : AppColors.softGreen,
                   shape: BoxShape.circle,
                 ),
-                child: Center(child: isDone
-                  ? const Icon(Icons.check, color: Colors.white, size: 14)
-                  : Text('${i + 1}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isActive ? Colors.white : AppColors.textGrey))),
+                child: Center(
+                    child: isDone
+                        ? const Icon(Icons.check, color: Colors.white, size: 14)
+                        : Text('${i + 1}',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isActive
+                                    ? Colors.white
+                                    : AppColors.textGrey))),
               ),
               const SizedBox(height: 4),
-              Text(steps[i], style: TextStyle(fontSize: 8.5, color: isActive ? AppColors.primary : AppColors.textGrey, fontWeight: isActive ? FontWeight.w600 : FontWeight.w400)),
+              Text(steps[i],
+                  style: TextStyle(
+                      fontSize: 8.5,
+                      color: isActive ? AppColors.primary : AppColors.textGrey,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w400)),
             ])),
             if (i < steps.length - 1)
-              Container(width: 24, height: 2, color: i < _currentStep ? AppColors.primary : AppColors.softGreen),
+              Container(
+                  width: 24,
+                  height: 2,
+                  color: i < _currentStep
+                      ? AppColors.primary
+                      : AppColors.softGreen),
           ]),
         );
       }),
@@ -237,7 +284,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
         maxLength: _maxNameLength,
         inputFormatters: [LengthLimitingTextInputFormatter(_maxNameLength)],
         textCapitalization: TextCapitalization.words,
-        decoration: _inputDec('örn: Hydrating Facial Cleanser', Icons.inventory_2_outlined),
+        decoration: _inputDec(
+            'örn: Hydrating Facial Cleanser', Icons.inventory_2_outlined),
         validator: (v) {
           if (v == null || v.trim().isEmpty) return 'Ürün adı zorunludur.';
           if (v.trim().length < 3) return 'En az 3 karakter giriniz.';
@@ -263,7 +311,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _categoryDropdown(),
       const SizedBox(height: 14),
       _sectionTitle('Uygun Cilt Tipleri *'),
-      const Text('Birden fazla seçebilirsiniz', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+      const Text('Birden fazla seçebilirsiniz',
+          style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
       const SizedBox(height: 8),
       _skinTypeChips(),
     ]);
@@ -273,25 +322,39 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget _buildStep2() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _sectionTitle('İçerik Listesi (Ingredients) *'),
-      const Text('Virgülle ayırarak giriniz', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+      const Text('Virgülle ayırarak giriniz',
+          style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
       const SizedBox(height: 8),
       TextFormField(
         controller: _ingredientsCtrl,
         maxLength: _maxIngredientsLength,
         maxLines: 5,
-        inputFormatters: [LengthLimitingTextInputFormatter(_maxIngredientsLength)],
+        inputFormatters: [
+          LengthLimitingTextInputFormatter(_maxIngredientsLength)
+        ],
         decoration: InputDecoration(
           hintText: 'Aqua, Glycerin, Niacinamide...',
           hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 12),
           alignLabelWithHint: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.softGreen, width: 2)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.softGreen, width: 2)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-          filled: true, fillColor: AppColors.cream,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: AppColors.softGreen, width: 2)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: AppColors.softGreen, width: 2)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+          filled: true,
+          fillColor: AppColors.cream,
         ),
         validator: (v) {
-          if (v == null || v.trim().isEmpty) return 'İçerik listesi zorunludur.';
-          if (v.trim().length < 10) return 'Lütfen daha detaylı içerik listesi giriniz.';
+          if (v == null || v.trim().isEmpty)
+            return 'İçerik listesi zorunludur.';
+          if (v.trim().length < 10)
+            return 'Lütfen daha detaylı içerik listesi giriniz.';
           return null;
         },
       ),
@@ -306,10 +369,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
           hintText: 'Ürün hakkında kısa bilgi...',
           hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 12),
           alignLabelWithHint: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.softGreen, width: 2)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.softGreen, width: 2)),
-          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-          filled: true, fillColor: AppColors.cream,
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: AppColors.softGreen, width: 2)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide:
+                  const BorderSide(color: AppColors.softGreen, width: 2)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2)),
+          filled: true,
+          fillColor: AppColors.cream,
         ),
       ),
       const SizedBox(height: 14),
@@ -330,39 +402,60 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget _buildStep3() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _sectionTitle('Ürün Fotoğrafı *'),
-      const Text('Max 5MB • JPG veya PNG', style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
+      const Text('Max 5MB • JPG veya PNG',
+          style: TextStyle(fontSize: 10, color: AppColors.textGrey)),
       const SizedBox(height: 12),
       GestureDetector(
         onTap: _pickImage,
         child: Container(
-          width: double.infinity, height: 200,
+          width: double.infinity,
+          height: 200,
           decoration: BoxDecoration(
             color: AppColors.cream,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.softGreen, width: 2, style: BorderStyle.solid),
+            border: Border.all(
+                color: AppColors.softGreen, width: 2, style: BorderStyle.solid),
           ),
           child: _selectedImage != null
-            ? ClipRRect(borderRadius: BorderRadius.circular(14), child: Image.file(_selectedImage!, fit: BoxFit.cover))
-            : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Container(width: 56, height: 56, decoration: BoxDecoration(color: AppColors.lightGreen, shape: BoxShape.circle),
-                  child: const Icon(Icons.camera_alt_outlined, color: AppColors.primary, size: 26)),
-                const SizedBox(height: 12),
-                const Text('Fotoğraf Seç', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.primary)),
-                const SizedBox(height: 4),
-                const Text('Galeriden seç veya fotoğraf çek', style: TextStyle(fontSize: 11, color: AppColors.textGrey)),
-              ]),
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.file(_selectedImage!, fit: BoxFit.cover))
+              : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                          color: AppColors.lightGreen, shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt_outlined,
+                          color: AppColors.primary, size: 26)),
+                  const SizedBox(height: 12),
+                  const Text('Fotoğraf Seç',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.primary)),
+                  const SizedBox(height: 4),
+                  const Text('Galeriden seç veya fotoğraf çek',
+                      style:
+                          TextStyle(fontSize: 11, color: AppColors.textGrey)),
+                ]),
         ),
       ),
       const SizedBox(height: 20),
       Container(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: AppColors.lightGreen, borderRadius: BorderRadius.circular(14)),
-        child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        decoration: BoxDecoration(
+            color: AppColors.lightGreen,
+            borderRadius: BorderRadius.circular(14)),
+        child:
+            const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Icon(Icons.info_outline, color: AppColors.primary, size: 16),
           SizedBox(width: 8),
-          Expanded(child: Text(
+          Expanded(
+              child: Text(
             'Ürün bilgileriniz incelendikten sonra sisteme eklenecektir. Bu süreçte ürün yalnızca sizin dolabınızda "Beklemede" olarak görünür.',
-            style: TextStyle(fontSize: 11, color: AppColors.primary, height: 1.5),
+            style:
+                TextStyle(fontSize: 11, color: AppColors.primary, height: 1.5),
           )),
         ]),
       ),
@@ -370,102 +463,143 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   Widget _categoryDropdown() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14),
-    decoration: BoxDecoration(
-      color: AppColors.cream, borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: AppColors.softGreen, width: 2),
-    ),
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: _selectedCategory,
-        hint: const Text('Kategori seçin', style: TextStyle(color: AppColors.textLight, fontSize: 13)),
-        isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textGrey),
-        items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 13, color: AppColors.textDark)))).toList(),
-        onChanged: (v) => setState(() => _selectedCategory = v),
-      ),
-    ),
-  );
-
-  Widget _skinTypeChips() => Wrap(
-    spacing: 8, runSpacing: 8,
-    children: _skinTypes.map((t) {
-      final selected = _selectedSkinTypes.contains(t);
-      return GestureDetector(
-        onTap: () => setState(() => selected ? _selectedSkinTypes.remove(t) : _selectedSkinTypes.add(t)),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: selected ? AppColors.lightGreen : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: selected ? AppColors.primary : AppColors.softGreen, width: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: AppColors.cream,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.softGreen, width: 2),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _selectedCategory,
+            hint: const Text('Kategori seçin',
+                style: TextStyle(color: AppColors.textLight, fontSize: 13)),
+            isExpanded: true,
+            icon: const Icon(Icons.keyboard_arrow_down,
+                color: AppColors.textGrey),
+            items: _categories
+                .map((c) => DropdownMenuItem(
+                    value: c,
+                    child: Text(c,
+                        style: const TextStyle(
+                            fontSize: 13, color: AppColors.textDark))))
+                .toList(),
+            onChanged: (v) => setState(() => _selectedCategory = v),
           ),
-          child: Text(t, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: selected ? AppColors.primary : AppColors.textGrey)),
         ),
       );
-    }).toList(),
-  );
+
+  Widget _skinTypeChips() => Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: _skinTypes.map((t) {
+          final selected = _selectedSkinTypes.contains(t);
+          return GestureDetector(
+            onTap: () => setState(() => selected
+                ? _selectedSkinTypes.remove(t)
+                : _selectedSkinTypes.add(t)),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: selected ? AppColors.lightGreen : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                    color: selected ? AppColors.primary : AppColors.softGreen,
+                    width: 1.5),
+              ),
+              child: Text(t,
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color:
+                          selected ? AppColors.primary : AppColors.textGrey)),
+            ),
+          );
+        }).toList(),
+      );
 
   InputDecoration _inputDec(String hint, IconData icon) => InputDecoration(
-    hintText: hint,
-    hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 13),
-    prefixIcon: Icon(icon, color: AppColors.secondary, size: 20),
-  );
+        hintText: hint,
+        hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 13),
+        prefixIcon: Icon(icon, color: AppColors.secondary, size: 20),
+      );
 
   Widget _sectionTitle(String t) => Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: Text(t, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textDark)),
-  );
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Text(t,
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textDark)),
+      );
 
   // ── İleri / Geri butonları ─────────────────────────────────
   Widget _buildNavButtons() {
     final isLast = _currentStep == 2;
     return Row(children: [
       if (_currentStep > 0) ...[
-        SizedBox(width: 48, child: OutlinedButton(
-          onPressed: () => setState(() => _currentStep--),
-          style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: AppColors.softGreen, width: 2),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          child: const Icon(Icons.arrow_back, color: AppColors.textDark, size: 18),
-        )),
+        SizedBox(
+            width: 48,
+            child: OutlinedButton(
+              onPressed: () => setState(() => _currentStep--),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: AppColors.softGreen, width: 2),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+              child: const Icon(Icons.arrow_back,
+                  color: AppColors.textDark, size: 18),
+            )),
         const SizedBox(width: 10),
       ],
-      Expanded(child: DecoratedBox(
-        decoration: BoxDecoration(gradient: AppGradients.primary, borderRadius: BorderRadius.circular(14)),
+      Expanded(
+          child: DecoratedBox(
+        decoration: BoxDecoration(
+            gradient: AppGradients.primary,
+            borderRadius: BorderRadius.circular(14)),
         child: ElevatedButton(
-          onPressed: _isLoading ? null : () {
-            if (isLast) {
-              _submit();
-            } else {
-              if (_formKey.currentState!.validate()) {
-                if (_currentStep == 0 && _selectedCategory == null) {
-                  _showError('Lütfen bir kategori seçin.');
-                  return;
-                }
-                if (_currentStep == 0 && _selectedSkinTypes.isEmpty) {
-                  _showError('Lütfen en az bir cilt tipi seçin.');
-                  return;
-                }
-                setState(() => _currentStep++);
-              }
-            }
-          },
+          onPressed: _isLoading
+              ? null
+              : () {
+                  if (isLast) {
+                    _submit();
+                  } else {
+                    if (_formKey.currentState!.validate()) {
+                      if (_currentStep == 0 && _selectedCategory == null) {
+                        _showError('Lütfen bir kategori seçin.');
+                        return;
+                      }
+                      if (_currentStep == 0 && _selectedSkinTypes.isEmpty) {
+                        _showError('Lütfen en az bir cilt tipi seçin.');
+                        return;
+                      }
+                      setState(() => _currentStep++);
+                    }
+                  }
+                },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           child: _isLoading
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-            : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text(isLast ? 'İncelemeye Gönder' : 'Devam Et',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
-                const SizedBox(width: 6),
-                Icon(isLast ? Icons.send_outlined : Icons.arrow_forward, color: Colors.white, size: 16),
-              ]),
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2))
+              : Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(isLast ? 'İncelemeye Gönder' : 'Devam Et',
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14)),
+                  const SizedBox(width: 6),
+                  Icon(isLast ? Icons.send_outlined : Icons.arrow_forward,
+                      color: Colors.white, size: 16),
+                ]),
         ),
       )),
     ]);
@@ -485,9 +619,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
               child: Column(children: [
                 Row(children: [
-                  IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.arrow_back, color: AppColors.textDark)),
-                  const Expanded(child: Text('Yeni Ürün Ekle', textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textDark))),
+                  IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back,
+                          color: AppColors.textDark)),
+                  const Expanded(
+                      child: Text('Yeni Ürün Ekle',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textDark))),
                   const SizedBox(width: 48),
                 ]),
                 const SizedBox(height: 14),
@@ -502,9 +644,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   duration: const Duration(milliseconds: 250),
                   child: KeyedSubtree(
                     key: ValueKey(_currentStep),
-                    child: _currentStep == 0 ? _buildStep1()
-                      : _currentStep == 1 ? _buildStep2()
-                      : _buildStep3(),
+                    child: _currentStep == 0
+                        ? _buildStep1()
+                        : _currentStep == 1
+                            ? _buildStep2()
+                            : _buildStep3(),
                   ),
                 ),
               ),
@@ -521,4 +665,3 @@ class _AddProductScreenState extends State<AddProductScreen> {
     );
   }
 }
-

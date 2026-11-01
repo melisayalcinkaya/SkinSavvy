@@ -81,7 +81,12 @@ class WishlistProduct {
   final String category;
   final String price;
 
-  WishlistProduct({required this.name, required this.brand, required this.imageUrl, required this.category, required this.price});
+  WishlistProduct(
+      {required this.name,
+      required this.brand,
+      required this.imageUrl,
+      required this.category,
+      required this.price});
 }
 
 class FinishedProduct {
@@ -92,5 +97,11 @@ class FinishedProduct {
   final bool wouldRebuy;
   final String note;
 
-  FinishedProduct({required this.name, required this.brand, required this.imageUrl, required this.category, required this.wouldRebuy, required this.note});
+  FinishedProduct(
+      {required this.name,
+      required this.brand,
+      required this.imageUrl,
+      required this.category,
+      required this.wouldRebuy,
+      required this.note});
 }

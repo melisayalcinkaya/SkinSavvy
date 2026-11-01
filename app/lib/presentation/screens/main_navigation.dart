@@ -38,11 +38,15 @@ class _MainNavigationState extends State<MainNavigation> {
       {'icon': Icons.person_outline, 'label': 'Profil'},
     ];
     return Container(
-      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.softGreen, width: 0.5))),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          border:
+              Border(top: BorderSide(color: AppColors.softGreen, width: 0.5))),
       child: SafeArea(
         child: SizedBox(
           height: 58,
-          child: Row(children: List.generate(items.length, (i) {
+          child: Row(
+              children: List.generate(items.length, (i) {
             final active = i == _index;
             return Expanded(
               child: InkWell(
@@ -51,11 +55,25 @@ class _MainNavigationState extends State<MainNavigation> {
                 highlightColor: AppColors.lightGreen,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(items[i]['icon'] as IconData, size: 21, color: active ? AppColors.primary : AppColors.textLight),
-                    const SizedBox(height: 3),
-                    Text(items[i]['label'] as String, style: TextStyle(fontSize: 8.5, color: active ? AppColors.primary : AppColors.textGrey, fontWeight: active ? FontWeight.w600 : FontWeight.w400)),
-                  ]),
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(items[i]['icon'] as IconData,
+                            size: 21,
+                            color: active
+                                ? AppColors.primary
+                                : AppColors.textLight),
+                        const SizedBox(height: 3),
+                        Text(items[i]['label'] as String,
+                            style: TextStyle(
+                                fontSize: 8.5,
+                                color: active
+                                    ? AppColors.primary
+                                    : AppColors.textGrey,
+                                fontWeight: active
+                                    ? FontWeight.w600
+                                    : FontWeight.w400)),
+                      ]),
                 ),
               ),
             );

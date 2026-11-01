@@ -43,20 +43,28 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Rutinden Çıkar',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textDark)),
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textDark)),
         content: Text(
-          '"${widget.item.productName}" ürününü rutinden çıkarmak istediğinizden emin misiniz?',
-          style: const TextStyle(fontSize: 13, color: AppColors.textGrey, height: 1.5)),
+            '"${widget.item.productName}" ürününü rutinden çıkarmak istediğinizden emin misiniz?',
+            style: const TextStyle(
+                fontSize: 13, color: AppColors.textGrey, height: 1.5)),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context),
-            child: const Text('İptal', style: TextStyle(color: AppColors.textGrey))),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context); // dialog kapat
-              Navigator.pop(context); // modal kapat
-              widget.onRemoveFromRoutine();
-            },
-            child: const Text('Çıkar', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w600))),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('İptal',
+                  style: TextStyle(color: AppColors.textGrey))),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context); // dialog kapat
+                Navigator.pop(context); // modal kapat
+                widget.onRemoveFromRoutine();
+              },
+              child: const Text('Çıkar',
+                  style: TextStyle(
+                      color: AppColors.accent, fontWeight: FontWeight.w600))),
         ],
       ),
     );
@@ -71,50 +79,71 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
       ),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         // Handle
-        Container(width: 36, height: 4, margin: const EdgeInsets.only(top: 12, bottom: 16),
-          decoration: BoxDecoration(color: AppColors.softGreen, borderRadius: BorderRadius.circular(2))),
+        Container(
+            width: 36,
+            height: 4,
+            margin: const EdgeInsets.only(top: 12, bottom: 16),
+            decoration: BoxDecoration(
+                color: AppColors.softGreen,
+                borderRadius: BorderRadius.circular(2))),
 
         // Header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(children: [
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
-                gradient: widget.isMorning ? AppGradients.morning : AppGradients.evening,
+                gradient: widget.isMorning
+                    ? AppGradients.morning
+                    : AppGradients.evening,
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                widget.isMorning ? Icons.wb_sunny_outlined : Icons.nightlight_outlined,
-                color: Colors.white, size: 18,
+                widget.isMorning
+                    ? Icons.wb_sunny_outlined
+                    : Icons.nightlight_outlined,
+                color: Colors.white,
+                size: 18,
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(
-                widget.isMorning ? 'Sabah Rutini' : 'Akşam Rutini',
-                style: const TextStyle(fontSize: 11, color: AppColors.textGrey),
-              ),
-              Text(widget.item.productName,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textDark)),
-            ])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(
+                    widget.isMorning ? 'Sabah Rutini' : 'Akşam Rutini',
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textGrey),
+                  ),
+                  Text(widget.item.productName,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDark)),
+                ])),
             // Tamamlandı toggle
             GestureDetector(
               onTap: _toggle,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 32, height: 32,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: _isCompleted ? AppColors.lightGreen : AppColors.cream,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: _isCompleted ? AppColors.primary : AppColors.softGreen,
+                    color:
+                        _isCompleted ? AppColors.primary : AppColors.softGreen,
                     width: 2,
                   ),
                 ),
                 child: _isCompleted
-                  ? const Icon(Icons.check, color: AppColors.primary, size: 16)
-                  : null,
+                    ? const Icon(Icons.check,
+                        color: AppColors.primary, size: 16)
+                    : null,
               ),
             ),
           ]),
@@ -132,7 +161,9 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
             _infoRow(Icons.business_outlined, 'Marka', widget.item.brand),
             const SizedBox(height: 10),
             _infoRow(
-              _isCompleted ? Icons.check_circle_outline : Icons.radio_button_unchecked,
+              _isCompleted
+                  ? Icons.check_circle_outline
+                  : Icons.radio_button_unchecked,
               'Durum',
               _isCompleted ? 'Tamamlandı' : 'Bekliyor',
               valueColor: _isCompleted ? AppColors.primary : AppColors.textGrey,
@@ -155,11 +186,14 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 15),
+              const Icon(Icons.lightbulb_outline,
+                  color: AppColors.primary, size: 15),
               const SizedBox(width: 8),
-              Expanded(child: Text(
+              Expanded(
+                  child: Text(
                 _getUsageTip(widget.item.productName),
-                style: const TextStyle(fontSize: 11, color: AppColors.primary, height: 1.5),
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.primary, height: 1.5),
               )),
             ]),
           ),
@@ -172,25 +206,32 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(children: [
             // Tamamlandı butonu
-            Expanded(child: DecoratedBox(
+            Expanded(
+                child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: _isCompleted
-                  ? const LinearGradient(colors: [AppColors.softGreen, AppColors.softGreen])
-                  : AppGradients.primary,
+                    ? const LinearGradient(
+                        colors: [AppColors.softGreen, AppColors.softGreen])
+                    : AppGradients.primary,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: ElevatedButton.icon(
                 onPressed: _toggle,
                 icon: Icon(
                   _isCompleted ? Icons.close : Icons.check,
-                  color: Colors.white, size: 16,
+                  color: Colors.white,
+                  size: 16,
                 ),
                 label: Text(
                   _isCompleted ? 'Geri Al' : 'Tamamlandı',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent, shadowColor: Colors.transparent,
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                 ),
               ),
@@ -201,10 +242,13 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
               onPressed: _confirmRemove,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.softGreen, width: 2),
-                padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 13, horizontal: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14)),
               ),
-              child: const Icon(Icons.remove_circle_outline, color: AppColors.accent, size: 20),
+              child: const Icon(Icons.remove_circle_outline,
+                  color: AppColors.accent, size: 20),
             ),
           ]),
         ),
@@ -214,17 +258,28 @@ class _RoutineItemDetailModalState extends State<RoutineItemDetailModal> {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value, {Color? valueColor}) => Row(children: [
-    Container(width: 32, height: 32,
-      decoration: BoxDecoration(color: AppColors.cream, borderRadius: BorderRadius.circular(8)),
-      child: Icon(icon, size: 16, color: AppColors.primary)),
-    const SizedBox(width: 10),
-    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textGrey)),
-      Text(value, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500,
-        color: valueColor ?? AppColors.textDark)),
-    ])),
-  ]);
+  Widget _infoRow(IconData icon, String label, String value,
+          {Color? valueColor}) =>
+      Row(children: [
+        Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+                color: AppColors.cream, borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, size: 16, color: AppColors.primary)),
+        const SizedBox(width: 10),
+        Expanded(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(label,
+              style: const TextStyle(fontSize: 10, color: AppColors.textGrey)),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: valueColor ?? AppColors.textDark)),
+        ])),
+      ]);
 
   String _getUsageTip(String productName) {
     final name = productName.toLowerCase();
