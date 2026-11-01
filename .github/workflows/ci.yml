@@ -47,6 +47,12 @@ jobs:
       - name: Web derlemesi
         run: flutter build web --release --base-href /SkinSavvy/
 
+      - name: Pages paketi
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/build/web
+
   backend:
     name: FastAPI sunucusu
     runs-on: ubuntu-latest
@@ -85,3 +91,19 @@ jobs:
             -d '{"email":"demo@skinsavvy.app","password":"demo-sifre-2026"}' | grep -q accessToken
           curl -fsSI localhost:8000/health | grep -qi strict-transport-security
           docker logs api
+
+  deploy:
+    name: GitHub Pages
+    # Yalnızca main'e gönderimde ve iki iş de geçtiyse yayınla.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [app, backend]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -10,8 +10,9 @@ import '../helpers.dart';
 Future<SessionController> pumpApp(
   WidgetTester tester, {
   LocalStore? store,
+  Size size = const Size(390, 844),
 }) async {
-  tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+  tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   final s = store ?? await emptyStore();
