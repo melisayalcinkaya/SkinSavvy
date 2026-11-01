@@ -1,7 +1,6 @@
 // ============================================================
 // lib/presentation/screens/profile/edit_profile_screen.dart
 // ============================================================
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/image_utils.dart';
 import '../../../core/utils/text_utils.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../state/session_controller.dart';
@@ -53,12 +53,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         imageQuality: 80,
       );
       if (picked == null) return;
-      final bytes = await picked.readAsBytes();
-      if (bytes.length > 5 * 1024 * 1024) {
-        _showError('Fotoğraf en fazla 5 MB olabilir.');
+      final image = toImageDataUrl(
+        await picked.readAsBytes(),
+        maxKb: maxAvatarKb,
+      );
+      if (image.error != null) {
+        _showError(image.error!);
         return;
       }
-      setState(() => _avatar = 'data:image/jpeg;base64,${base64Encode(bytes)}');
+      setState(() => _avatar = image.url);
     } on PlatformException {
       _showError('Galeriye erişilemedi. İzinleri kontrol edin.');
     }

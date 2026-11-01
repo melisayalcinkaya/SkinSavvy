@@ -21,6 +21,9 @@ dependencies:
   shared_preferences: ^2.5.0
   crypto: ^3.0.6
 
+  # Sunucu modu (API_URL verilirse)
+  http: ^1.6.0
+
   # Fotoğraf seçme ve paylaşma
   image_picker: ^1.2.0
   share_plus: ^13.0.0

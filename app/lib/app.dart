@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/local/local_store.dart';
+import 'data/remote/api_client.dart';
 import 'router.dart';
 import 'state/catalog_controller.dart';
 import 'state/review_controller.dart';
@@ -14,10 +15,18 @@ import 'state/settings_controller.dart';
 import 'state/shelf_controller.dart';
 
 class SkinSavvyApp extends StatefulWidget {
-  const SkinSavvyApp({super.key, required this.store, required this.session});
+  const SkinSavvyApp({
+    super.key,
+    required this.store,
+    required this.session,
+    this.api,
+  });
 
   final LocalStore store;
   final SessionController session;
+
+  /// Sunucu modunda API istemcisi; cihaz modunda null.
+  final ApiClient? api;
 
   @override
   State<SkinSavvyApp> createState() => _SkinSavvyAppState();
@@ -49,9 +58,11 @@ class _SkinSavvyAppState extends State<SkinSavvyApp> {
   @override
   Widget build(BuildContext context) {
     final store = widget.store;
+    final api = widget.api;
     return MultiProvider(
       providers: [
         Provider.value(value: store),
+        Provider<ApiClient?>.value(value: api),
         ChangeNotifierProvider.value(value: widget.session),
         _perUser<SettingsController>(
           (uid) => SettingsController(store, uid),
@@ -62,11 +73,11 @@ class _SkinSavvyAppState extends State<SkinSavvyApp> {
           (c) => c.uid,
         ),
         _perUser<CatalogController>(
-          (uid) => CatalogController(store, uid),
+          (uid) => CatalogController(store, uid, api: api),
           (c) => c.uid,
         ),
         _perUser<ReviewController>(
-          (uid) => ReviewController(store, uid),
+          (uid) => ReviewController(store, uid, api: api),
           (c) => c.uid,
         ),
         ChangeNotifierProxyProvider2<

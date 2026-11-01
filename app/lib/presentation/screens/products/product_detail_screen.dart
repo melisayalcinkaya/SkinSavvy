@@ -8,6 +8,7 @@ import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
+import '../../widgets/server_widgets.dart';
 import '../shared/add_product_modal.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -26,7 +27,11 @@ class ProductDetailScreen extends StatelessWidget {
     final inShelf = context.select<ShelfController, bool>(
       (s) => s.activeForProduct(p.id) != null,
     );
-    final badge = p.isPending ? 'Onay bekliyor' : p.badge;
+    final badge = p.isPending
+        ? 'Onay bekliyor'
+        : p.isRejected
+        ? 'Onaylanmadı'
+        : p.badge;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -209,10 +214,16 @@ class ProductDetailScreen extends StatelessWidget {
                           const SizedBox(height: 14),
                           _infoCard('Faydaları', p.benefits),
                         ],
+                        if (p.isRejected) ...[
+                          const SizedBox(height: 10),
+                          RejectedNotice(reason: p.rejectReason),
+                        ],
                         const SizedBox(height: 10),
                         AnalysisCard(
                           analysis: analyzeForUser(context, p.ingredients),
                         ),
+                        if (!p.isPending && !p.isRejected)
+                          CommunityReviews(productId: p.id),
                         const SizedBox(height: 16),
                         _addButton(context, p, inShelf),
                       ],

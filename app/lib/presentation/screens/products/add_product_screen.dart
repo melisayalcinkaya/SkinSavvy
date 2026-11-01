@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,6 +5,9 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/skin_options.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/image_utils.dart';
+import '../../../data/models/product.dart';
+import '../../../data/remote/api_client.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
@@ -43,7 +44,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   static const int _maxBrandLength = 100;
   static const int _maxDescLength = 500;
   static const int _maxIngredientsLength = 2000;
-  static const int _maxImageSizeMB = 5;
 
   static const _categories = productCategories;
   static const _skinTypes = productSkinTypes;
@@ -59,16 +59,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   // ── Fotoğraf seçici ────────────────────────────────────────
-  // Uzantıya değil dosyanın ilk baytlarına (imza) bakılır: "foto.png" adıyla
-  // yüklenen bir betik uzantı kontrolünü geçer ama imza kontrolünü geçemez.
-  static bool _looksLikeImage(List<int> b) =>
-      (b.length > 3 && b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF) || // JPEG
-      (b.length > 8 &&
-          b[0] == 0x89 &&
-          b[1] == 0x50 &&
-          b[2] == 0x4E &&
-          b[3] == 0x47); // PNG
-
   Future<void> _pickImage() async {
     try {
       // Görsel cihazda küçültülür; hem depolama hem yükleme boyutu düşer.
@@ -79,19 +69,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
         imageQuality: 80,
       );
       if (picked == null) return;
-      final bytes = await picked.readAsBytes();
-      if (bytes.length > _maxImageSizeMB * 1024 * 1024) {
-        _showError('Fotoğraf boyutu en fazla $_maxImageSizeMB MB olabilir.');
-        return;
-      }
-      if (!_looksLikeImage(bytes)) {
-        _showError('Yalnızca JPG ve PNG fotoğraflar kabul edilir.');
-        return;
-      }
-      final mime = bytes[0] == 0xFF ? 'jpeg' : 'png';
-      setState(
-        () => _imageData = 'data:image/$mime;base64,${base64Encode(bytes)}',
+      final image = toImageDataUrl(
+        await picked.readAsBytes(),
+        maxKb: maxProductImageKb,
       );
+      if (image.error != null) {
+        _showError(image.error!);
+        return;
+      }
+      setState(() => _imageData = image.url);
     } on PlatformException {
       _showError('Galeriye erişilemedi. İzinleri kontrol edin.');
     }
@@ -124,18 +110,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
 
     setState(() => _isLoading = true);
-    // Sunucu modunda burada API'ye gönderilir; ürün yönetici onayına kadar
-    // "pending" kalır ve yalnızca ekleyen kişiye görünür.
-    final product = catalog.submit(
-      name: _nameCtrl.text,
-      brand: _brandCtrl.text,
-      category: _selectedCategory!,
-      skinTypes: List.of(_selectedSkinTypes),
-      ingredients: ingredients,
-      description: _descCtrl.text,
-      barcode: _barcodeCtrl.text,
-      imageUrl: _imageData ?? '',
-    );
+    // Ürün yönetici onayına kadar "pending" kalır ve yalnızca ekleyen kişiye
+    // görünür. Sunucu modunda API'ye gönderilir.
+    final Product product;
+    try {
+      product = await catalog.submit(
+        name: _nameCtrl.text,
+        brand: _brandCtrl.text,
+        category: _selectedCategory!,
+        skinTypes: List.of(_selectedSkinTypes),
+        ingredients: ingredients,
+        description: _descCtrl.text,
+        barcode: _barcodeCtrl.text,
+        imageUrl: _imageData ?? '',
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showError(e.message);
+      return;
+    }
+    if (!mounted) return;
     context.read<ShelfController>().addProduct(product);
     setState(() => _isLoading = false);
     Navigator.pushReplacement(

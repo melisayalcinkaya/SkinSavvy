@@ -21,6 +21,7 @@ class Product {
     this.description = '',
     this.barcode,
     this.status = ProductStatus.approved,
+    this.rejectReason,
   });
 
   final String id;
@@ -39,7 +40,11 @@ class Product {
   final String? barcode;
   final ProductStatus status;
 
+  /// Yönetici reddettiyse gerekçesi (yalnızca ekleyen kişi görür).
+  final String? rejectReason;
+
   bool get isPending => status == ProductStatus.pending;
+  bool get isRejected => status == ProductStatus.rejected;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -57,6 +62,7 @@ class Product {
     'description': description,
     'barcode': barcode,
     'status': status.name,
+    if (rejectReason != null) 'rejectReason': rejectReason,
   };
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
@@ -75,5 +81,6 @@ class Product {
     description: asString(j['description']) ?? '',
     barcode: asString(j['barcode']),
     status: asEnum(ProductStatus.values, j['status'], ProductStatus.approved),
+    rejectReason: asString(j['rejectReason']),
   );
 }

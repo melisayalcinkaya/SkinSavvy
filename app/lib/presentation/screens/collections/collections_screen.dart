@@ -614,6 +614,9 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     final pending = context.select<CatalogController, bool>(
       (c) => c.byId(it.productId)?.isPending ?? false,
     );
+    final rejected = context.select<CatalogController, bool>(
+      (c) => c.byId(it.productId)?.isRejected ?? false,
+    );
     // Profildeki bir alerjen bu üründe var mı?
     final avoid = analyzeForUser(context, it.ingredients).findings
         .where((f) => f.level == FindingLevel.avoid)
@@ -698,6 +701,12 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
                         _chip(it.category),
                         if (pending)
                           _chip('Onay bekliyor', bg: AppColors.softGreen),
+                        if (rejected)
+                          _chip(
+                            'Onaylanmadı',
+                            bg: const Color(0xFFFFEEE8),
+                            fg: AppColors.accent,
+                          ),
                         if (daysLeft != null && daysLeft <= warnDays)
                           _chip(
                             daysLeft < 0

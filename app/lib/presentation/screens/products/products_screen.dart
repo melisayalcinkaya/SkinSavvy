@@ -10,6 +10,7 @@ import '../../../state/catalog_controller.dart';
 import '../../../state/session_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
+import '../../widgets/server_widgets.dart';
 import '../shared/add_product_modal.dart';
 import 'add_product_screen.dart';
 import 'product_detail_screen.dart';
@@ -75,13 +76,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
             children: [
               _header(categories),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(top: 12, bottom: 16),
-                  children: [
-                    if (query.isEmpty && profile.skinType != null)
-                      _recommendBanner(profile),
-                    _grid(results, catalog, analyses),
-                  ],
+                child: RefreshIndicator(
+                  color: AppColors.primary,
+                  // Sunucu modunda listeyi yeniden çeker; cihaz modunda etkisiz.
+                  onRefresh: catalog.reload,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 12, bottom: 16),
+                    children: [
+                      const CatalogStatusBanner(),
+                      if (query.isEmpty && profile.skinType != null)
+                        _recommendBanner(profile),
+                      if (!(catalog.isLoading && catalog.products.isEmpty))
+                        _grid(results, catalog, analyses),
+                    ],
+                  ),
                 ),
               ),
             ],

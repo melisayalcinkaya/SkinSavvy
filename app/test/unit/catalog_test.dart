@@ -25,7 +25,7 @@ void main() {
   test('onaya gönderilen ürün beklemede ve kalıcı, tekrar eklenemez', () async {
     final store = await emptyStore();
     final catalog = CatalogController(store, 'u1');
-    final p = catalog.submit(
+    final p = await catalog.submit(
       name: 'Gül Suyu Tonik',
       brand: 'Deneme',
       category: 'Tonik',

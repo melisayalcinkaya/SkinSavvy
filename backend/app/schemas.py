@@ -37,7 +37,7 @@ CATEGORIES = (
     "Yağ",
     "Diğer",
 )
-PRODUCT_SKIN_TYPES = ("Tüm Ciltler", *SKIN_TYPES)
+PRODUCT_SKIN_TYPES = ("Tüm Cilt Tipleri", *SKIN_TYPES)
 
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f<>]")
 
