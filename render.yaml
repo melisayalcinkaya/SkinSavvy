@@ -1,0 +1,23 @@
+# Render Blueprint: New > Blueprint > bu depo. Ücretsiz planda 15 dk hareketsizlikte uyur;
+# ilk istek ~30-60 sn sürebilir. SQLite dosyası her dağıtımda sıfırlanır (demo verisi yeniden yüklenir).
+services:
+  - type: web
+    name: skinsavvy-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: TRUST_FORWARDED_FOR
+        value: "true"
+      - key: CORS_ORIGINS
+        value: https://melisayalcinkaya.github.io
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
