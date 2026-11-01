@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.9"
+
+jobs:
+  app:
+    name: Flutter uygulaması
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Bağımlılıklar
+        run: flutter pub get
+
+      - name: Biçim kontrolü
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Statik analiz
+        run: flutter analyze
+
+      - name: Testler
+        run: flutter test
+
+      - name: Web derlemesi
+        run: flutter build web --release --base-href /SkinSavvy/

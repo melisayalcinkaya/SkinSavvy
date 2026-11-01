@@ -1,0 +1,7 @@
+# Satır sonları depoda her zaman LF (Windows/Linux/macOS farkı diff kirletmesin)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.jar binary
+*.bat text eol=crlf
