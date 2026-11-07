@@ -1,0 +1,33 @@
+name: scratch
+on:
+  push:
+    branches: [toolchain]
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.9"
+          channel: stable
+          cache: true
+      - run: cd app && flutter pub get && flutter build web --release --base-href /
+      - run: |
+          mkdir -p ci-out
+          cd app && (flutter test --reporter expanded > ../ci-out/test.txt 2>&1 || true)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          mkdir -p ci-out/shots
+          cd tools && npm init -y >/dev/null && npm i playwright@1.56.1 >/dev/null && npx playwright install --with-deps chromium >/dev/null
+          (cd ../app/build/web && python3 -m http.server 8080 >/dev/null 2>&1 &)
+          sleep 2
+          node shots.js > ../ci-out/shots.log 2>&1 || true
+      - run: |
+          git config user.name ci
+          git config user.email ci@example.com
+          git add ci-out && git commit -m "ci output" && git push -f origin HEAD:toolchain
