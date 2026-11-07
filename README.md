@@ -55,7 +55,10 @@ kullanıcı fark etmeden önce gösterir.
   ve paylaşma. Profilde eklediğim, kullandığım ürün ve yorum sayıları.
 - **Topluluk ürün veritabanı:** Ücretli ve kapsamlı bir kozmetik API'si olmadığı
   için ürünleri kullanıcılar ekler (zorunlu fotoğraf, içerik listesi, barkod, cilt
-  tipleri). Öneri, ekip karar verene kadar yalnızca ekleyene görünür; aynı ad/marka
+  tipleri). Ürün eklemeye her yerden ulaşılır: Ürünler sekmesindeki sabit **"Ürün
+  Ekle"** butonu, arama sonuç vermeyince çıkan kısayol ve Koleksiyon'daki "Ürün
+  ekle". Yeni kullanıcı bunu karşılama ekranında ve Ürünler'de bir kez çıkan
+  "Katalog seninle büyüyor" kartında öğrenir. Öneri, ekip karar verene kadar yalnızca ekleyene görünür; aynı ad/marka
   ya da barkod ikinci kez eklenemez. **Reddetme yoktur**: kullanıcıya "düzelt, yeniden
   gönder" yükü bindirilmez. Ekip, uygulama içindeki **onay kuyruğunda** fotoğrafı,
   bilgileri, kaç içeriğin tanındığını ve katalogdaki benzer ürünleri görüp şu

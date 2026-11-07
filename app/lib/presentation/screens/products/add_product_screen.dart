@@ -678,6 +678,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     Row(
                       children: [
                         IconButton(
+                          tooltip: 'Geri',
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(
                             Icons.arrow_back,

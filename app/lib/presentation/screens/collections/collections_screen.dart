@@ -16,6 +16,7 @@ import '../../../state/shelf_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
+import '../main_navigation.dart';
 import '../profile/share_finished_screen.dart';
 import '../reviews/write_review_screen.dart';
 import '../shared/add_product_modal.dart';
@@ -303,13 +304,27 @@ class _CollectionsScreenState extends State<CollectionsScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Koleksiyonlarım',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textDark,
-          ),
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Koleksiyonlarım',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+            // Dolaba ürün Ürünler sekmesinden eklenir; katalogda yoksa orada
+            // "Ürün Ekle" ile önerilir.
+            TextButton.icon(
+              onPressed: () => MainNavigation.select(context, MainTab.products),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('Ürün ekle', style: TextStyle(fontSize: 12)),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(

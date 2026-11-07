@@ -9,6 +9,7 @@ import '../../../data/models/user.dart';
 import '../../../domain/ingredients/ingredient_analyzer.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/session_controller.dart';
+import '../../../state/tips_controller.dart';
 import '../../widgets/analysis_card.dart';
 import '../../widgets/product_image.dart';
 import '../../widgets/server_widgets.dart';
@@ -33,6 +34,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
       p.skinTypes.isEmpty ||
       p.skinTypes.contains('Tüm Cilt Tipleri') ||
       p.skinTypes.contains(profile.skinType);
+
+  /// Yeni ürün önerme formunu açar; tanıtım kartı artık gerekmez.
+  void _openAddProduct() {
+    context.read<TipsController>().dismiss(TipsController.addProduct);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => AddProductScreen(initialName: query)),
+    );
+  }
 
   void _showAddModal(Product p) {
     showModalBottomSheet(
@@ -69,7 +79,21 @@ class _ProductsScreenState extends State<ProductsScreen> {
             );
     }
 
+    final showIntro = !context.select<TipsController, bool>(
+      (t) => t.isSeen(TipsController.addProduct),
+    );
+
     return Scaffold(
+      // Katalog kullanıcılarla büyür: ürün ekleme her an bir dokunuş uzakta.
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'add-product',
+        onPressed: _openAddProduct,
+        tooltip: 'Kataloğa yeni ürün ekle',
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add),
+        label: const Text('Ürün Ekle'),
+      ),
       body: Container(
         decoration: const BoxDecoration(gradient: AppGradients.background),
         child: SafeArea(
@@ -83,9 +107,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   onRefresh: catalog.reload,
                   child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(top: 12, bottom: 16),
+                    // Altta "Ürün Ekle" butonu son kartları örtmesin.
+                    padding: const EdgeInsets.only(top: 12, bottom: 88),
                     children: [
                       const CatalogStatusBanner(),
+                      if (showIntro) _addProductIntro(),
                       if (query.isEmpty && profile.skinType != null)
                         _recommendBanner(profile),
                       if (!(catalog.isLoading && catalog.products.isEmpty))
@@ -100,6 +126,68 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
     );
   }
+
+  /// İlk kullanımda bir kez: katalog kullanıcılarla büyür, ürünü sen ekle.
+  Widget _addProductIntro() => Container(
+    margin: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: AppColors.softGreen),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.volunteer_activism_outlined, color: AppColors.primary),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Katalog seninle büyüyor 🌱',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'SkinSavvy\'deki ürünleri kullanıcılar ekliyor. Kullandığın ürün '
+          'listede yoksa fotoğrafını ve içerik listesini ekle: hemen '
+          'dolabına girer, ekip kontrol edince herkes görebilir.',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppColors.textGrey,
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            FilledButton.icon(
+              onPressed: _openAddProduct,
+              style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+              icon: const Icon(Icons.add, size: 16),
+              label: const Text('İlk ürününü ekle'),
+            ),
+            TextButton(
+              onPressed: () => context.read<TipsController>().dismiss(
+                TipsController.addProduct,
+              ),
+              child: const Text('Anladım'),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 
   Widget _header(List<String> categories) => Container(
     color: Colors.white.withValues(alpha: 0.95),
@@ -272,12 +360,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
             borderRadius: BorderRadius.circular(14),
           ),
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => AddProductScreen(initialName: query),
-              ),
-            ),
+            onPressed: _openAddProduct,
             icon: const Icon(Icons.add, color: Colors.white, size: 18),
             label: const Text(
               'Bu ürünü sisteme ekle',

@@ -121,7 +121,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                       child: Padding(
                         padding: EdgeInsets.all(32),
                         child: Text(
-                          'Dolabında kullandığın ürün yok.\nÖnce Ürünler sekmesinden ürün ekle.',
+                          'Dolabında kullandığın ürün yok.\nÖnce Ürünler sekmesinden ürün ekle; '
+                          'katalogda yoksa "Ürün Ekle" ile kendin ekleyebilirsin.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13,

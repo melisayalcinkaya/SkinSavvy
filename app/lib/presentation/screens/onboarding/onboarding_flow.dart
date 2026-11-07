@@ -553,6 +553,35 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 ],
               ),
             ),
+            const SizedBox(height: 12),
+            // Topluluk kataloğunu ilk günden tanıt: ürün eklemek kullanıcının işi.
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.lightGreen,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.add_circle_outline, color: AppColors.primary),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Kullandığın ürün katalogda yoksa Ürünler sekmesindeki '
+                      '"Ürün Ekle" butonuyla sen ekleyebilirsin. SkinSavvy '
+                      'kataloğu kullanıcılarla büyüyor.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textDark,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,

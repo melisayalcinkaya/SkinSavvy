@@ -9,6 +9,7 @@ import 'data/remote/api_client.dart';
 import 'router.dart';
 import 'state/catalog_controller.dart';
 import 'state/decision_sync.dart';
+import 'state/tips_controller.dart';
 import 'state/review_controller.dart';
 import 'state/routine_controller.dart';
 import 'state/session_controller.dart';
@@ -71,6 +72,10 @@ class _SkinSavvyAppState extends State<SkinSavvyApp> {
         ),
         _perUser<ShelfController>(
           (uid) => ShelfController(store, uid),
+          (c) => c.uid,
+        ),
+        _perUser<TipsController>(
+          (uid) => TipsController(store, uid),
           (c) => c.uid,
         ),
         _perUser<ReviewController>(

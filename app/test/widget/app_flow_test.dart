@@ -6,6 +6,7 @@ import 'package:skinsavvy_app/presentation/screens/reminders/reminders_screen.da
 import 'package:skinsavvy_app/presentation/screens/auth/login_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/main_navigation.dart';
 import 'package:skinsavvy_app/presentation/screens/moderation/moderation_screen.dart';
+import 'package:skinsavvy_app/presentation/screens/products/add_product_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/products/product_detail_screen.dart';
 import 'package:skinsavvy_app/presentation/screens/onboarding/onboarding_flow.dart';
 
@@ -87,6 +88,7 @@ void main() {
     await tapText(tester, 'Devam Et');
     await tapText(tester, 'Devam Et');
     expect(find.textContaining('Kaçınılacak: Retinol'), findsOneWidget);
+    expect(find.textContaining('"Ürün Ekle" butonuyla'), findsOneWidget);
     await tapText(tester, 'Uygulamaya Başla');
 
     expect(find.byType(MainNavigation), findsOneWidget);
@@ -280,4 +282,48 @@ void main() {
     expect(find.text('✓ Tekrar Alırım'), findsNothing);
     expect(liked + find.text('✗ Tekrar Almam').evaluate().length, total);
   });
+
+  testWidgets('ürün ekleme her zaman görünür; tanıtım kartı bir kez çıkar', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await tapText(tester, 'Demo hesabıyla dene');
+    await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+    const intro = 'Katalog seninle büyüyor 🌱';
+    expect(find.text(intro), findsOneWidget);
+
+    // Sağ alttaki sabit buton arama yapmadan formu açar.
+    await tapFinder(
+      tester,
+      find.widgetWithText(FloatingActionButton, 'Ürün Ekle'),
+    );
+    expect(find.byType(AddProductScreen), findsOneWidget);
+    await tapFinder(tester, find.byTooltip('Geri').last);
+
+    // Form bir kez açıldı: kart kalktı, buton duruyor.
+    expect(find.text(intro), findsNothing);
+    expect(
+      find.widgetWithText(FloatingActionButton, 'Ürün Ekle'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'tanıtım kartı "Anladım" ile kapanır, Koleksiyon\'dan da ulaşılır',
+    (tester) async {
+      await pumpApp(tester);
+      await tapText(tester, 'Demo hesabıyla dene');
+      await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+      await tapText(tester, 'Anladım');
+      expect(find.text('Katalog seninle büyüyor 🌱'), findsNothing);
+
+      // Koleksiyon'daki "Ürün ekle" Ürünler sekmesine götürür.
+      await tapFinder(tester, find.byIcon(Icons.bookmarks_outlined).last);
+      await tapButton<TextButton>(tester, 'Ürün ekle');
+      expect(
+        find.widgetWithText(FloatingActionButton, 'Ürün Ekle'),
+        findsOneWidget,
+      );
+    },
+  );
 }

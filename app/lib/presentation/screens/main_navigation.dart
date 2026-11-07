@@ -27,6 +27,10 @@ class MainNavigation extends StatefulWidget {
 
   final MainTab initialTab;
 
+  /// Alt çubuktaki bir sekmeye geçer (ör. Koleksiyon'dan "Ürün ekle").
+  static void select(BuildContext context, MainTab tab) =>
+      context.findAncestorStateOfType<_MainNavigationState>()?._select(tab);
+
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
@@ -40,6 +44,8 @@ class _MainNavigationState extends State<MainNavigation> {
     RoutineHomeScreen(),
     ProfileScreen(),
   ];
+
+  void _select(MainTab tab) => setState(() => _tab = tab);
 
   @override
   void didUpdateWidget(MainNavigation oldWidget) {
