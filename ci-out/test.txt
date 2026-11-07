@@ -1,0 +1,300 @@
+Resolving dependencies...
+Downloading packages...
+  clock 1.1.2 (1.1.3 available)
+  cross_file 0.3.5+2 (0.4.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  cupertino_ui 1.1.5 (1.1.6 available)
+  file_selector_linux 0.9.4 (0.9.4+1 available)
+  file_selector_macos 0.9.5 (0.9.5+2 available)
+  file_selector_windows 0.9.3+5 (0.9.3+6 available)
+  flutter_plugin_android_lifecycle 2.0.34 (2.0.35 available)
+  go_router 18.1.2 (18.1.3 available)
+  image_picker 1.2.2 (1.2.4 available)
+  image_picker_android 0.8.13+17 (0.8.13+25 available)
+  image_picker_ios 0.8.13+3 (0.8.13+15 available)
+  image_picker_platform_interface 2.11.1 (2.11.2 available)
+  jni 1.0.0 (1.1.2 available)
+  jni_flutter 1.0.1 (1.0.4+1 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.9.0 (1.10.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_foundation 2.5.1 (2.6.0 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  platform 3.1.6 (3.2.0 available)
+  shared_preferences 2.5.5 (2.5.6 available)
+  shared_preferences_android 2.4.23 (2.5.4 available)
+  shared_preferences_foundation 2.5.6 (2.6.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  test_api 0.7.12 (0.7.15 available)
+  url_launcher_linux 3.2.2 (3.2.3 available)
+  url_launcher_windows 3.1.5 (3.1.6 available)
+  uuid 4.5.3 (4.6.0 available)
+  vm_service 15.2.0 (15.4.0 available)
+  web 1.1.1 (1.1.2 available)
+Got dependencies!
+34 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart
+00:00 +0: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: yinelenen: kayıt tarihleri, notu ve yorumuyla asıl ürüne bağlanır
+00:00 +1: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: yinelenen: asıl ürüne zaten yorum yazılmışsa o korunur
+00:00 +2: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: silinen: dolaptan ve yorumlardan kalkar
+00:00 +3: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: ekip düzeltmesi dolaba bir kez yansır, kullanıcı düzenlemesi ezilmez
+00:00 +4: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: düzeltilmeden onaylanan ve bekleyen öneriye dokunulmaz
+00:00 +5: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/decision_sync_test.dart: bitirdiklerim memnuniyete göre süzülür
+00:00 +6: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: geçerli son kullanma sınırı PAO, SKT'den önce dolarsa PAO esas alınır
+00:00 +7: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: geçerli son kullanma sınırı SKT daha yakınsa SKT esas alınır
+00:00 +8: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: geçerli son kullanma sınırı açılmamış üründe yalnızca SKT; hiçbiri yoksa null
+00:00 +9: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: geçerli son kullanma sınırı ay sonu taşması: 31 Ağustos + 6 ay = 28 Şubat
+00:00 +10: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: ürün hatırlatmaları süresi dolan, yaklaşan ve uzak ürünler
+00:00 +11: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: ürün hatırlatmaları uyarı gün sayısı ayardan gelir
+00:00 +12: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: ürün hatırlatmaları ayar kapalıysa son kullanma ve azalma hatırlatılmaz
+00:00 +13: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: ürün hatırlatmaları bitmek üzere olan ürün acil sayılmaz, sonda listelenir
+00:00 +14: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: ürün hatırlatmaları istek listesi ve bitmiş ürünler yok sayılır
+00:00 +15: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: rutin hatırlatmaları saati geçmiş ve tamamlanmamış rutin hatırlatılır
+00:00 +16: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: rutin hatırlatmaları saati gelmeden ya da tamamlanınca hatırlatılmaz
+00:00 +17: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: rutin hatırlatmaları sabah rutini öğleden sonra hatırlatılmaz, akşam saatinde akşam
+00:00 +18: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: rutin hatırlatmaları rutin hatırlatması kapatılabilir
+00:00 +19: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: öneri kararları her karar önerene bildirilir; hiçbiri acil sayılmaz
+00:00 +20: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: öneri kararları ekip düzelttiyse onay bildiriminde belirtilir
+00:00 +21: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: öneri kararları asıl ürün bulunamazsa genel metin gösterilir
+00:00 +22: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: öneri kararları "Ürün onaylandı" bildirimi kapatılabilir
+00:00 +23: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/reminders_test.dart: öneri kararları ekibe onay kuyruğu hatırlatılır
+00:00 +24: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: arama ad ve markada Türkçe karakter duyarsız çalışır
+00:00 +25: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: onaya gönderilen ürün beklemede ve kalıcı, tekrar eklenemez
+00:00 +26: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: favoriler kullanıcıya özeldir
+00:00 +27: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: demo kataloğundaki görseller var olan dosyaları gösterir
+00:00 +28: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) öneri ekip onayıyla herkese açılır, öneren bildirim alır
+00:00 +29: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) fotoğrafsız öneri kabul edilmez
+00:00 +30: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) ekip düzeltip onaylar; öneren "ekip düzenledi" notunu görür
+00:00 +31: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) düzeltme katalogdaki başka ürünle çakışamaz
+00:00 +32: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) yinelenen öneri asıl ürüne bağlanır, katalogda görünmez
+00:00 +33: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) silinen öneri içeriğiyle birlikte kalkar, önerene bildirilir
+00:00 +34: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) eski sürümün "rejected" kaydı silinmiş sayılır
+00:00 +35: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) katkı sayısı onaylı ve bekleyen önerileri sayar
+00:00 +36: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) aynı barkodla ikinci öneri yakalanır
+00:00 +37: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) puanlar uydurulmaz: topluluk yorumlarından hesaplanır
+00:00 +38: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: topluluk kataloğu (cihaz modu) eski sürümün kullanıcıya özel önerileri ortak listeye taşınır
+00:00 +39: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) kaldırılan ürün aramada yok ama kimliğiyle açılır, geri alınır
+00:00 +40: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) kaldırılan ürün yeniden önerilebilir; o zaman eskisi geri alınamaz
+00:00 +41: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) ekip hazır katalog ürününü düzenler; çakışan ad kabul edilmez
+00:00 +42: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) katalog işlemleri yalnızca ekibe açık
+00:00 +43: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) kaldırma önerene "karar" olarak bildirilmez, katkı sayılır
+00:00 +44: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_test.dart: katalogdan kaldırma ve düzenleme (cihaz modu) kullanıcı bekleyen önerisini geri çeker, kararı verilmişi çekemez
+00:01 +45: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: içerik eşleştirme INCI yazım farklarını tanır
+00:01 +46: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: içerik eşleştirme bilinmeyen içerik null döner, uydurma eşleşme yapmaz
+00:01 +47: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: içerik eşleştirme yağ alkolü kurutucu alkol sayılmaz
+00:01 +48: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz profildeki alerjen ürünü "uygun değil" yapar
+00:01 +49: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz elle yazılan alerjen de yakalanır (Türkçe harf duyarsız)
+00:01 +50: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz hassas ciltte parfüm uyarı, normal ciltte bilgi notudur
+00:01 +51: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz alkol yalnızca listenin başındaysa uyarır
+00:01 +52: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz akneye eğilimli ciltte komedojen içerik uyarısı
+00:01 +53: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz endişeye iyi gelen içerikler olumlu bulgu olur
+00:01 +54: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz güneş filtresi olmayan asitli üründe SPF notu
+00:01 +55: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz boş içerik listesi nötr sonuç verir
+00:01 +56: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: profile göre analiz demo kataloğundaki her ürünün içeriklerinin çoğu tanınır
+00:01 +57: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı aynı akşam retinoid + asit: yalnızca ortak günler raporlanır
+00:01 +58: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı farklı günlere dağıtılınca uyarı kalkar
+00:01 +59: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı iki asit aynı vakitte tek uyarı üretir
+00:01 +60: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı sabah retinoid ve eksik SPF uyarılır
+00:01 +61: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı akşam güneş kremi bilgi notu, uyarılar önce sıralanır
+00:01 +62: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı içerik listesi olmayan üründe ada bakılır
+00:01 +63: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/ingredient_analysis_test.dart: rutin danışmanı dolapta olmayan ürünün adımı yok sayılır
+00:01 +64: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: kayıt olan kullanıcı aynı şifreyle giriş yapabilir, oturum geri yüklenir
+00:01 +65: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: şifre düz metin olarak saklanmaz
+00:01 +66: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: yanlış şifre ve olmayan hesap aynı mesajı verir
+00:01 +67: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: aynı e-posta ile ikinci kayıt ve kısa şifre reddedilir
+00:01 +68: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: pbkdf2 RFC 7914 test vektörünü üretir
+00:01 +69: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: demo hesabı örnek verilerle açılır ve hesap silinince veriler gider
+00:01 +70: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/auth_test.dart: e-posta değişikliği başka hesapla çakışamaz
+00:01 +71: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/tips_test.dart: kapatılan ipucu kalıcıdır ve hesaba özeldir
+00:01 +72: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/tips_test.dart: oturum yokken hiçbir şey yazılmaz
+00:02 +73: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_sync_test.dart: sunucunun demo kataloğu uygulamadakiyle aynı
+00:02 +74: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_sync_test.dart: sunucunun topluluk yorumları uygulamadakiyle aynı
+00:02 +75: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/catalog_sync_test.dart: demo verisinde fiyat ve uydurma puan yok
+00:02 +76: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap giriş token saklar, kullanıcıyı eşler; yanlış şifre mesajı
+00:02 +77: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap doğrulama hatasında sunucunun Türkçe mesajı gösterilir
+00:02 +78: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap süresi dolan erişim token'ı bir kez yenilenir, istek tekrarlanır
+00:02 +79: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap yenileme reddedilirse oturum temizlenir
+00:02 +80: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap bağlantı hatası durum 0 ile anlaşılır mesaj verir, oturum silinmez
+00:02 +81: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap oturum geri yüklenir; profil kaydı PATCH ile gider
+00:02 +82: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap demo girişi demo verisini bir kez yazar
+00:02 +83: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: API istemcisi ve hesap çıkış ve hesap silme
+00:02 +84: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog katalog ve önerilerin durumu sunucudan gelir
+00:02 +85: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog ekip kararları doğru uç noktaya gider
+00:02 +86: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog yükleme hatası saklanır
+00:02 +87: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog öneri gönderilir; çakışmada sunucu mesajı
+00:02 +88: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda yorumlar yorum sunucuya gönderilir ve silinir
+00:02 +89: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda yorumlar gönderim sürerken silinen yorum sunucuda kalmaz
+00:02 +90: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda yorumlar çevrimdışı yorum kuyrukta kalır, sonraki açılışta gönderilir
+00:02 +91: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda yorumlar onay bekleyen ürüne yorum cihazda kalır, kuyruğu tıkamaz
+00:02 +92: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog işlemleri ekip düzenler, kaldırır, geri alır; kaldırılanlar listelenir
+00:02 +93: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog işlemleri listede olmayan ürün bir kez sunucudan getirilir
+00:02 +94: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/remote_test.dart: sunucu modunda katalog işlemleri kullanıcı bekleyen önerisini geri çeker
+00:02 +95: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: dolap ve rutin kalıcıdır (yeni örnek aynı veriyi okur)
+00:02 +96: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: kullanıcılar birbirinin verisini görmez
+00:02 +97: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: ürün bitirilince rutinden de kalkar
+00:02 +98: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: aynı ürün aynı vakte iki kez eklenmez
+00:02 +99: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: son gün kaldırılınca rutin adımı silinir
+00:02 +100: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: alınacaklardan kullanmaya başlamak aynı kaydı günceller, bitmişten yeni kayıt açar
+00:02 +101: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: seri ve tamamlama oranı bugün henüz yapılmadıysa seri dünden sayılır
+00:02 +102: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: seri ve tamamlama oranı atlanan gün seriyi bozar
+00:02 +103: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: seri ve tamamlama oranı planı olmayan gün seriyi bozmaz
+00:02 +104: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: seri ve tamamlama oranı tamamlama oranı yapılan / planlanan
+00:02 +105: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/shelf_routine_test.dart: aynı ürüne ikinci yorum yenisini oluşturmaz, günceller
+00:03 +106: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseDateInput geçerli tarihi okur
+00:03 +107: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseDateInput takvimde olmayan tarihleri reddeder
+00:03 +108: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseDateInput biçim dışı girdileri reddeder
+00:03 +109: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: addMonths ayın son gününe kırpar
+00:03 +110: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: formatDateShort Türkçe ay kısaltması kullanır
+00:03 +111: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: searchKey Türkçe harf ve büyük/küçük farkını yok sayar
+00:03 +112: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: sanitizeInput etiketleri atar ama kesme işaretini korur
+00:03 +113: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseIngredients virgül, noktalı virgül ve satır sonuyla böler
+00:03 +114: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseIngredients parantez içindeki virgülleri bölmez
+00:03 +115: /home/runner/work/SkinSavvy/SkinSavvy/app/test/unit/date_text_utils_test.dart: parseIngredients boş öğeleri atar
+00:10 +116: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: oturum yoksa giriş ekranı açılır
+00:11 +117: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: dar telefon (320 px): ekranlar taşmıyor
+00:11 +118: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: dar telefon (320 px): ekranlar taşmıyor
+00:12 +119: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: dar telefon (320 px): ekranlar taşmıyor
+00:12 +120: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: dar telefon (320 px): ekranlar taşmıyor
+00:13 +120: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ürün önerisi: ekip onaylar, herkese açılır, önerene bildirim gider
+
+Warning: A call to tap() with finder "Found 1 widget with text "Kategori seçin": [
+  Text("Kategori seçin", inherit: true, color: Color(alpha: 1.0000, red: 0.6118, green: 0.6392, blue: 0.6863, colorSpace: ColorSpace.sRGB), size: 13.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery, _ScrollableScope]),
+]" derived an Offset (Offset(78.8, 425.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#96903 relayoutBoundary=up33
+The hit test result at that offset is: HitTestResult(RenderPointerListener#57df2@Offset(42.8, 24.0), RenderSemanticsAnnotations#e5d8b@Offset(42.8, 24.0), RenderMouseRegion#40ca1@Offset(42.8, 24.0), RenderSemanticsAnnotations#a9e35@Offset(42.8, 24.0), RenderSemanticsAnnotations#3f122@Offset(42.8, 24.0), RenderPadding#c8b1a@Offset(58.8, 26.0), RenderDecoratedBox#84bdc@Offset(58.8, 26.0), RenderFlex#5b29f@Offset(58.8, 275.0), RenderAnimatedOpacity#26007@Offset(58.8, 275.0), RenderStack#069d2@Offset(58.8, 275.0), RenderPadding#f91e5@Offset(78.8, 295.0), _RenderSingleChildViewport#1deda@Offset(78.8, 295.0), RenderIgnorePointer#a2900@Offset(78.8, 295.0), RenderSemanticsAnnotations#e70d8@Offset(78.8, 295.0), RenderPointerListener#59270@Offset(78.8, 295.0), RenderSemanticsGestureHandler#1bdb0@Offset(78.8, 295.0), RenderPointerListener#4ebd4@Offset(78.8, 295.0), _RenderScrollSemantics#9ca24@Offset(78.8, 295.0), RenderClipRect#dd9da@Offset(78.8, 295.0), RenderFlex#a4d90@Offset(78.8, 425.0), RenderSemanticsAnnotations#2fa54@Offset(78.8, 425.0), RenderPadding#e5b4a@Offset(78.8, 425.0), RenderCustomMultiChildLayoutBox#dd965@Offset(78.8, 425.0), _RenderInkFeatures#e9616@Offset(78.8, 425.0), RenderPhysicalModel#7ab3f@Offset(78.8, 425.0), RenderSemanticsAnnotations#5ad65@Offset(78.8, 425.0), RenderRepaintBoundary#cf226@Offset(78.8, 425.0), RenderIgnorePointer#8cbb2@Offset(78.8, 425.0), RenderAnimatedOpacity#0fc37@Offset(78.8, 425.0), RenderAnimatedOpacity#943bb@Offset(78.8, 425.0), _RenderColoredBox#5c298@Offset(78.8, 425.0), RenderAnimatedOpacity#95cd9@Offset(78.8, 425.0), RenderIgnorePointer#f846e@Offset(78.8, 425.0), RenderAnimatedOpacity#e2f11@Offset(78.8, 425.0), RenderRepaintBoundary#eb837@Offset(78.8, 425.0), RenderSemanticsAnnotations#26d0f@Offset(78.8, 425.0), RenderOffstage#77350@Offset(78.8, 425.0), RenderSemanticsAnnotations#dafd4@Offset(78.8, 425.0), _RenderTheater#8061b@Offset(78.8, 425.0), RenderAbsorbPointer#6a3ce@Offset(78.8, 425.0), RenderPointerListener#57774@Offset(78.8, 425.0), RenderSemanticsAnnotations#c0d1d@Offset(78.8, 425.0), RenderSemanticsAnnotations#dbc2c@Offset(78.8, 425.0), RenderSemanticsAnnotations#302b2@Offset(78.8, 425.0), RenderTapRegionSurface#d617d@Offset(78.8, 425.0), RenderSemanticsAnnotations#0586a@Offset(78.8, 425.0), RenderSemanticsAnnotations#a0810@Offset(78.8, 425.0), HitTestEntry<HitTestTarget>#44dcb(_ReusableRenderView#be085), HitTestEntry<HitTestTarget>#d98c5(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      tapFinder (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_harness.dart:74:16)
+<asynchronous suspension>
+#4      main.<anonymous closure> (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:118:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#7      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:14 +121: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: dar telefon (320 px): ekranlar taşmıyor
+00:14 +122: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: yinelenen öneri asıl ürüne bağlanır, dolap kaydı taşınır
+
+Warning: A call to tap() with finder "Found 1 widget with text "Kategori seçin": [
+  Text("Kategori seçin", inherit: true, color: Color(alpha: 1.0000, red: 0.6118, green: 0.6392, blue: 0.6863, colorSpace: ColorSpace.sRGB), size: 13.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery, _ScrollableScope]),
+]" derived an Offset (Offset(78.8, 425.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#65f1c relayoutBoundary=up33
+The hit test result at that offset is: HitTestResult(RenderPointerListener#32b0b@Offset(42.8, 24.0), RenderSemanticsAnnotations#3fba0@Offset(42.8, 24.0), RenderMouseRegion#d2028@Offset(42.8, 24.0), RenderSemanticsAnnotations#88519@Offset(42.8, 24.0), RenderSemanticsAnnotations#ec71e@Offset(42.8, 24.0), RenderPadding#22091@Offset(58.8, 26.0), RenderDecoratedBox#c7981@Offset(58.8, 26.0), RenderFlex#a8051@Offset(58.8, 275.0), RenderAnimatedOpacity#b90fd@Offset(58.8, 275.0), RenderStack#e3fa0@Offset(58.8, 275.0), RenderPadding#7560a@Offset(78.8, 295.0), _RenderSingleChildViewport#c2470@Offset(78.8, 295.0), RenderIgnorePointer#376f6@Offset(78.8, 295.0), RenderSemanticsAnnotations#4a462@Offset(78.8, 295.0), RenderPointerListener#155cb@Offset(78.8, 295.0), RenderSemanticsGestureHandler#28062@Offset(78.8, 295.0), RenderPointerListener#d458d@Offset(78.8, 295.0), _RenderScrollSemantics#539fc@Offset(78.8, 295.0), RenderClipRect#359e8@Offset(78.8, 295.0), RenderFlex#1d0b6@Offset(78.8, 425.0), RenderSemanticsAnnotations#4ef11@Offset(78.8, 425.0), RenderPadding#2b743@Offset(78.8, 425.0), RenderCustomMultiChildLayoutBox#9017f@Offset(78.8, 425.0), _RenderInkFeatures#72337@Offset(78.8, 425.0), RenderPhysicalModel#6ea55@Offset(78.8, 425.0), RenderSemanticsAnnotations#601cf@Offset(78.8, 425.0), RenderRepaintBoundary#a9498@Offset(78.8, 425.0), RenderIgnorePointer#d05ca@Offset(78.8, 425.0), RenderAnimatedOpacity#42d50@Offset(78.8, 425.0), RenderAnimatedOpacity#60196@Offset(78.8, 425.0), _RenderColoredBox#bcba0@Offset(78.8, 425.0), RenderAnimatedOpacity#68aeb@Offset(78.8, 425.0), RenderIgnorePointer#600ca@Offset(78.8, 425.0), RenderAnimatedOpacity#4fa8f@Offset(78.8, 425.0), RenderRepaintBoundary#41ee2@Offset(78.8, 425.0), RenderSemanticsAnnotations#7e6d1@Offset(78.8, 425.0), RenderOffstage#7e8f4@Offset(78.8, 425.0), RenderSemanticsAnnotations#54fae@Offset(78.8, 425.0), _RenderTheater#e6005@Offset(78.8, 425.0), RenderAbsorbPointer#4516a@Offset(78.8, 425.0), RenderPointerListener#9d778@Offset(78.8, 425.0), RenderSemanticsAnnotations#9cf3a@Offset(78.8, 425.0), RenderSemanticsAnnotations#58c3f@Offset(78.8, 425.0), RenderSemanticsAnnotations#b60b7@Offset(78.8, 425.0), RenderTapRegionSurface#d3389@Offset(78.8, 425.0), RenderSemanticsAnnotations#0d542@Offset(78.8, 425.0), RenderSemanticsAnnotations#0a63f@Offset(78.8, 425.0), HitTestEntry<HitTestTarget>#fd19a(_ReusableRenderView#be085), HitTestEntry<HitTestTarget>#4623b(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      tapFinder (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_harness.dart:74:16)
+<asynchronous suspension>
+#4      main.proposeAndOpenQueue (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:176:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:197:5)
+<asynchronous suspension>
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#8      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:15 +123: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: telefon (390 px): ekranlar taşmıyor
+00:16 +123: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: spam öneri silinir, önerenin dolabından da kalkar
+
+Warning: A call to tap() with finder "Found 1 widget with text "Kategori seçin": [
+  Text("Kategori seçin", inherit: true, color: Color(alpha: 1.0000, red: 0.6118, green: 0.6392, blue: 0.6863, colorSpace: ColorSpace.sRGB), size: 13.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery, _ScrollableScope]),
+]" derived an Offset (Offset(78.8, 425.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#22ab4 relayoutBoundary=up33
+The hit test result at that offset is: HitTestResult(RenderPointerListener#351a0@Offset(42.8, 24.0), RenderSemanticsAnnotations#536b2@Offset(42.8, 24.0), RenderMouseRegion#c85f8@Offset(42.8, 24.0), RenderSemanticsAnnotations#84a76@Offset(42.8, 24.0), RenderSemanticsAnnotations#58d86@Offset(42.8, 24.0), RenderPadding#18888@Offset(58.8, 26.0), RenderDecoratedBox#d4c09@Offset(58.8, 26.0), RenderFlex#9b0c7@Offset(58.8, 275.0), RenderAnimatedOpacity#23d50@Offset(58.8, 275.0), RenderStack#a7b03@Offset(58.8, 275.0), RenderPadding#c16b9@Offset(78.8, 295.0), _RenderSingleChildViewport#dcf5a@Offset(78.8, 295.0), RenderIgnorePointer#ad68e@Offset(78.8, 295.0), RenderSemanticsAnnotations#ba319@Offset(78.8, 295.0), RenderPointerListener#f4079@Offset(78.8, 295.0), RenderSemanticsGestureHandler#2564d@Offset(78.8, 295.0), RenderPointerListener#c1450@Offset(78.8, 295.0), _RenderScrollSemantics#c29a9@Offset(78.8, 295.0), RenderClipRect#14731@Offset(78.8, 295.0), RenderFlex#77952@Offset(78.8, 425.0), RenderSemanticsAnnotations#f7440@Offset(78.8, 425.0), RenderPadding#c6f92@Offset(78.8, 425.0), RenderCustomMultiChildLayoutBox#ca072@Offset(78.8, 425.0), _RenderInkFeatures#41c3e@Offset(78.8, 425.0), RenderPhysicalModel#19061@Offset(78.8, 425.0), RenderSemanticsAnnotations#3b844@Offset(78.8, 425.0), RenderRepaintBoundary#90415@Offset(78.8, 425.0), RenderIgnorePointer#96045@Offset(78.8, 425.0), RenderAnimatedOpacity#ab176@Offset(78.8, 425.0), RenderAnimatedOpacity#e7487@Offset(78.8, 425.0), _RenderColoredBox#c66c7@Offset(78.8, 425.0), RenderAnimatedOpacity#f72c7@Offset(78.8, 425.0), RenderIgnorePointer#e7381@Offset(78.8, 425.0), RenderAnimatedOpacity#ceeea@Offset(78.8, 425.0), RenderRepaintBoundary#4df98@Offset(78.8, 425.0), RenderSemanticsAnnotations#fc01c@Offset(78.8, 425.0), RenderOffstage#09409@Offset(78.8, 425.0), RenderSemanticsAnnotations#8fc99@Offset(78.8, 425.0), _RenderTheater#90330@Offset(78.8, 425.0), RenderAbsorbPointer#502cc@Offset(78.8, 425.0), RenderPointerListener#cf2b8@Offset(78.8, 425.0), RenderSemanticsAnnotations#ca578@Offset(78.8, 425.0), RenderSemanticsAnnotations#b5f58@Offset(78.8, 425.0), RenderSemanticsAnnotations#a3738@Offset(78.8, 425.0), RenderTapRegionSurface#65961@Offset(78.8, 425.0), RenderSemanticsAnnotations#8b4de@Offset(78.8, 425.0), RenderSemanticsAnnotations#114b8@Offset(78.8, 425.0), HitTestEntry<HitTestTarget>#5300c(_ReusableRenderView#be085), HitTestEntry<HitTestTarget>#77823(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      tapFinder (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_harness.dart:74:16)
+<asynchronous suspension>
+#4      main.proposeAndOpenQueue (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:176:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:230:5)
+<asynchronous suspension>
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#8      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:16 +124: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: spam öneri silinir, önerenin dolabından da kalkar
+00:16 +125: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/layout_scan_test.dart: masaüstü (1280 px): ekranlar taşmıyor
+00:17 +125: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ekip düzeltip onaylar; önerene "ekip düzeltti" notu gider
+
+Warning: A call to tap() with finder "Found 1 widget with text "Kategori seçin": [
+  Text("Kategori seçin", inherit: true, color: Color(alpha: 1.0000, red: 0.6118, green: 0.6392, blue: 0.6863, colorSpace: ColorSpace.sRGB), size: 13.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery, _ScrollableScope]),
+]" derived an Offset (Offset(78.8, 425.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#de1d1 relayoutBoundary=up33
+The hit test result at that offset is: HitTestResult(RenderPointerListener#63a60@Offset(42.8, 24.0), RenderSemanticsAnnotations#e6e54@Offset(42.8, 24.0), RenderMouseRegion#c8af1@Offset(42.8, 24.0), RenderSemanticsAnnotations#a83f1@Offset(42.8, 24.0), RenderSemanticsAnnotations#82137@Offset(42.8, 24.0), RenderPadding#5ce81@Offset(58.8, 26.0), RenderDecoratedBox#e0620@Offset(58.8, 26.0), RenderFlex#6e7a8@Offset(58.8, 275.0), RenderAnimatedOpacity#11ef4@Offset(58.8, 275.0), RenderStack#27476@Offset(58.8, 275.0), RenderPadding#c8823@Offset(78.8, 295.0), _RenderSingleChildViewport#cf883@Offset(78.8, 295.0), RenderIgnorePointer#6dc25@Offset(78.8, 295.0), RenderSemanticsAnnotations#11192@Offset(78.8, 295.0), RenderPointerListener#ab407@Offset(78.8, 295.0), RenderSemanticsGestureHandler#5cd46@Offset(78.8, 295.0), RenderPointerListener#06a8f@Offset(78.8, 295.0), _RenderScrollSemantics#f003e@Offset(78.8, 295.0), RenderClipRect#9bf80@Offset(78.8, 295.0), RenderFlex#81b4e@Offset(78.8, 425.0), RenderSemanticsAnnotations#dde76@Offset(78.8, 425.0), RenderPadding#8e919@Offset(78.8, 425.0), RenderCustomMultiChildLayoutBox#fff9d@Offset(78.8, 425.0), _RenderInkFeatures#05a41@Offset(78.8, 425.0), RenderPhysicalModel#43ae1@Offset(78.8, 425.0), RenderSemanticsAnnotations#3492b@Offset(78.8, 425.0), RenderRepaintBoundary#fd381@Offset(78.8, 425.0), RenderIgnorePointer#54a8e@Offset(78.8, 425.0), RenderAnimatedOpacity#4aadf@Offset(78.8, 425.0), RenderAnimatedOpacity#2803a@Offset(78.8, 425.0), _RenderColoredBox#de3f0@Offset(78.8, 425.0), RenderAnimatedOpacity#3eb22@Offset(78.8, 425.0), RenderIgnorePointer#27baa@Offset(78.8, 425.0), RenderAnimatedOpacity#ac52f@Offset(78.8, 425.0), RenderRepaintBoundary#0164d@Offset(78.8, 425.0), RenderSemanticsAnnotations#6cdc0@Offset(78.8, 425.0), RenderOffstage#5d6d3@Offset(78.8, 425.0), RenderSemanticsAnnotations#55502@Offset(78.8, 425.0), _RenderTheater#fb796@Offset(78.8, 425.0), RenderAbsorbPointer#895d1@Offset(78.8, 425.0), RenderPointerListener#94a0e@Offset(78.8, 425.0), RenderSemanticsAnnotations#03437@Offset(78.8, 425.0), RenderSemanticsAnnotations#fa03c@Offset(78.8, 425.0), RenderSemanticsAnnotations#09f4e@Offset(78.8, 425.0), RenderTapRegionSurface#83ecd@Offset(78.8, 425.0), RenderSemanticsAnnotations#2c910@Offset(78.8, 425.0), RenderSemanticsAnnotations#7ac96@Offset(78.8, 425.0), HitTestEntry<HitTestTarget>#87755(_ReusableRenderView#be085), HitTestEntry<HitTestTarget>#adaa8(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      tapFinder (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_harness.dart:74:16)
+<asynchronous suspension>
+#4      main.proposeAndOpenQueue (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:176:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:249:5)
+<asynchronous suspension>
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#8      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:17 +126: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ekip düzeltip onaylar; önerene "ekip düzeltti" notu gider
+00:17 +127: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: bitirdiklerim memnuniyete göre süzülür
+00:18 +128: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ürün ekleme her zaman görünür; tanıtım kartı bir kez çıkar
+00:18 +129: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: tanıtım kartı "Anladım" ile kapanır, Koleksiyon'dan da ulaşılır
+00:18 +130: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ekip ürünü katalogdan kaldırır; dolaptaki kayıt durur, geri alınır
+00:19 +131: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: ekip katalogdaki ürünü düzenler
+00:19 +132: /home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart: kullanıcı bekleyen önerisini geri çeker
+
+Warning: A call to tap() with finder "Found 1 widget with text "Kategori seçin": [
+  Text("Kategori seçin", inherit: true, color: Color(alpha: 1.0000, red: 0.6118, green: 0.6392, blue: 0.6863, colorSpace: ColorSpace.sRGB), size: 13.0, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery, _ScrollableScope]),
+]" derived an Offset (Offset(78.8, 425.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderParagraph#3ee85 relayoutBoundary=up33
+The hit test result at that offset is: HitTestResult(RenderPointerListener#16ea9@Offset(42.8, 24.0), RenderSemanticsAnnotations#8247c@Offset(42.8, 24.0), RenderMouseRegion#eaabb@Offset(42.8, 24.0), RenderSemanticsAnnotations#f4d2f@Offset(42.8, 24.0), RenderSemanticsAnnotations#81005@Offset(42.8, 24.0), RenderPadding#8ceff@Offset(58.8, 26.0), RenderDecoratedBox#ed9e5@Offset(58.8, 26.0), RenderFlex#aa83f@Offset(58.8, 275.0), RenderAnimatedOpacity#d188c@Offset(58.8, 275.0), RenderStack#9308c@Offset(58.8, 275.0), RenderPadding#69d9b@Offset(78.8, 295.0), _RenderSingleChildViewport#ab165@Offset(78.8, 295.0), RenderIgnorePointer#404b0@Offset(78.8, 295.0), RenderSemanticsAnnotations#719e5@Offset(78.8, 295.0), RenderPointerListener#70e95@Offset(78.8, 295.0), RenderSemanticsGestureHandler#9009e@Offset(78.8, 295.0), RenderPointerListener#5560c@Offset(78.8, 295.0), _RenderScrollSemantics#61fc3@Offset(78.8, 295.0), RenderClipRect#61101@Offset(78.8, 295.0), RenderFlex#91bb0@Offset(78.8, 425.0), RenderSemanticsAnnotations#54d29@Offset(78.8, 425.0), RenderPadding#87ab7@Offset(78.8, 425.0), RenderCustomMultiChildLayoutBox#7b335@Offset(78.8, 425.0), _RenderInkFeatures#7f793@Offset(78.8, 425.0), RenderPhysicalModel#899f3@Offset(78.8, 425.0), RenderSemanticsAnnotations#e6df4@Offset(78.8, 425.0), RenderRepaintBoundary#13d16@Offset(78.8, 425.0), RenderIgnorePointer#ec0b4@Offset(78.8, 425.0), RenderAnimatedOpacity#d37ff@Offset(78.8, 425.0), RenderAnimatedOpacity#0a08b@Offset(78.8, 425.0), _RenderColoredBox#4212b@Offset(78.8, 425.0), RenderAnimatedOpacity#5341b@Offset(78.8, 425.0), RenderIgnorePointer#51c1d@Offset(78.8, 425.0), RenderAnimatedOpacity#91e5a@Offset(78.8, 425.0), RenderRepaintBoundary#29b4b@Offset(78.8, 425.0), RenderSemanticsAnnotations#cfe9e@Offset(78.8, 425.0), RenderOffstage#61cd0@Offset(78.8, 425.0), RenderSemanticsAnnotations#35500@Offset(78.8, 425.0), _RenderTheater#19e57@Offset(78.8, 425.0), RenderAbsorbPointer#c1d8e@Offset(78.8, 425.0), RenderPointerListener#64b76@Offset(78.8, 425.0), RenderSemanticsAnnotations#04997@Offset(78.8, 425.0), RenderSemanticsAnnotations#fea6b@Offset(78.8, 425.0), RenderSemanticsAnnotations#47e3d@Offset(78.8, 425.0), RenderTapRegionSurface#2df84@Offset(78.8, 425.0), RenderSemanticsAnnotations#8bb55@Offset(78.8, 425.0), RenderSemanticsAnnotations#7bc16@Offset(78.8, 425.0), HitTestEntry<HitTestTarget>#aa70e(_ReusableRenderView#be085), HitTestEntry<HitTestTarget>#da4fc(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      tapFinder (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_harness.dart:74:16)
+<asynchronous suspension>
+#4      main.proposeAndOpenQueue (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:176:5)
+<asynchronous suspension>
+#5      main.<anonymous closure> (file:///home/runner/work/SkinSavvy/SkinSavvy/app/test/widget/app_flow_test.dart:384:5)
+<asynchronous suspension>
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1953:5)
+<asynchronous suspension>
+#8      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:20 +133: All tests passed!
