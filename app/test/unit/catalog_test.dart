@@ -270,4 +270,144 @@ void main() {
       },
     );
   });
+
+  group('katalogdan kaldırma ve düzenleme (cihaz modu)', () {
+    const lumen = 'p-temizleyici-lumen';
+
+    Future<Product> propose(
+      CatalogController c, {
+      String name = 'Papatya Tonik',
+    }) => c.submit(
+      name: name,
+      brand: 'Bahçe',
+      category: 'Tonik',
+      skinTypes: const ['Hassas Cilt'],
+      ingredients: const ['Aqua', 'Glycerin'],
+      imageUrl: png,
+    );
+
+    test(
+      'kaldırılan ürün aramada yok ama kimliğiyle açılır, geri alınır',
+      () async {
+        final store = await emptyStore();
+        final team = CatalogController(store, 'a', isAdmin: true);
+        await team.delist(lumen);
+
+        final user = CatalogController(store, 'u1');
+        expect(user.products.any((p) => p.id == lumen), isFalse);
+        expect(user.search(query: 'nem dengesi'), isEmpty);
+        expect(user.byId(lumen)?.isDelisted, isTrue);
+        expect(team.delisted.single.id, lumen);
+        await expectLater(team.delist(lumen), throwsStateError);
+
+        await team.relist(lumen);
+        expect(CatalogController(store, 'u1').byId(lumen)?.isApproved, isTrue);
+        expect(team.delisted, isEmpty);
+      },
+    );
+
+    test(
+      'kaldırılan ürün yeniden önerilebilir; o zaman eskisi geri alınamaz',
+      () async {
+        final store = await emptyStore();
+        final team = CatalogController(store, 'a', isAdmin: true);
+        final original = team.byId(lumen)!;
+        await team.delist(lumen);
+        final user = CatalogController(store, 'u1');
+        expect(user.findDuplicate(original.name, original.brand), isNull);
+        final again = await user.submit(
+          name: original.name,
+          brand: original.brand,
+          category: original.category,
+          skinTypes: original.skinTypes,
+          ingredients: original.ingredients,
+          imageUrl: png,
+        );
+        await team.reload();
+        await team.approve(again.id);
+        await expectLater(team.relist(lumen), throwsStateError);
+      },
+    );
+
+    test(
+      'ekip hazır katalog ürününü düzenler; çakışan ad kabul edilmez',
+      () async {
+        final store = await emptyStore();
+        final team = CatalogController(store, 'a', isAdmin: true);
+        final p = team.byId(lumen)!;
+        await team.editProduct(
+          lumen,
+          p.copyWith(
+            description: 'Ekip düzeltti.',
+            ingredients: const ['Aqua'],
+          ),
+        );
+        final seen = CatalogController(store, 'u1').byId(lumen)!;
+        expect(seen.description, 'Ekip düzeltti.');
+        expect(seen.ingredients, ['Aqua']);
+        // Ürün tek kez listelenir (hazır kaydın yerine geçer).
+        expect(
+          CatalogController(store, 'u1').products.where((e) => e.id == lumen),
+          hasLength(1),
+        );
+        final other = team.products.firstWhere((e) => e.id != lumen);
+        await expectLater(
+          team.editProduct(
+            lumen,
+            p.copyWith(name: other.name, brand: other.brand),
+          ),
+          throwsStateError,
+        );
+      },
+    );
+
+    test('katalog işlemleri yalnızca ekibe açık', () async {
+      final c = CatalogController(await emptyStore(), 'u1');
+      await expectLater(c.delist(lumen), throwsStateError);
+      await expectLater(c.relist(lumen), throwsStateError);
+      await expectLater(c.editProduct(lumen, c.byId(lumen)!), throwsStateError);
+    });
+
+    test(
+      'kaldırma önerene "karar" olarak bildirilmez, katkı sayılır',
+      () async {
+        final store = await emptyStore();
+        final user = CatalogController(store, 'u1');
+        final p = await propose(user);
+        final team = CatalogController(store, 'a', isAdmin: true);
+        await team.approve(p.id);
+        user.markDecisionSeen(p.id);
+        await team.delist(p.id);
+        await user.reload();
+        expect(user.unseenDecisions, isEmpty);
+        expect(user.contributionCount, 1);
+      },
+    );
+
+    test(
+      'kullanıcı bekleyen önerisini geri çeker, kararı verilmişi çekemez',
+      () async {
+        final store = await emptyStore();
+        final user = CatalogController(store, 'u1');
+        final p = await propose(user);
+        await user.withdraw(p.id);
+        expect(user.submissions, isEmpty);
+        expect(
+          CatalogController(store, 'a', isAdmin: true).reviewQueue,
+          isEmpty,
+        );
+
+        final q = await propose(user, name: 'Gül Suyu');
+        await CatalogController(store, 'a', isAdmin: true).approve(q.id);
+        await user.reload();
+        await expectLater(user.withdraw(q.id), throwsStateError);
+        // Başkasının önerisi bulunamaz.
+        final r = await propose(user, name: 'Lavanta Suyu');
+        await expectLater(
+          CatalogController(store, 'u2').withdraw(r.id),
+          throwsStateError,
+        );
+      },
+    );
+  });
 }

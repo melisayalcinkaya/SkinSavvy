@@ -184,7 +184,7 @@ List<Reminder> buildReminders({
               'dolabından da kaldırıldı.',
           productId: p.id,
         ),
-        ProductStatus.pending => null,
+        ProductStatus.pending || ProductStatus.delisted => null,
       };
       if (reminder != null) result.add(reminder);
     }

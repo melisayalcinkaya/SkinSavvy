@@ -6,7 +6,11 @@ import 'json.dart';
 /// Ekip onu (gerekirse düzeltip) onaylar → `approved`, aynısı zaten varsa
 /// asıl ürüne bağlar → `duplicate`, spam/sahte ise siler → `removed`.
 /// Reddetme yok: eksik ya da hatalı bilgiyi ekip düzeltir.
-enum ProductStatus { approved, pending, duplicate, removed }
+///
+/// Onaylı ürün sonradan katalogdan kaldırılabilir (`delisted`, ör. üretimden
+/// kalktı): aramada görünmez, yeni kullanıcı dolabına ekleyemez; daha önce
+/// ekleyenlerin kaydı ve yorumu durur. Ekip geri alabilir.
+enum ProductStatus { approved, pending, duplicate, removed, delisted }
 
 /// Katalogdaki ürün.
 class Product {
@@ -116,6 +120,7 @@ class Product {
   bool get isApproved => status == ProductStatus.approved;
   bool get isDuplicate => status == ProductStatus.duplicate;
   bool get isRemoved => status == ProductStatus.removed;
+  bool get isDelisted => status == ProductStatus.delisted;
 
   /// Katalogda yer alabilir mi (yinelenen ya da silinen değil)?
   bool get isLive => isApproved || isPending;

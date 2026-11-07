@@ -28,6 +28,9 @@ class ProductStatus(enum.StrEnum):
     pending = "pending"
     duplicate = "duplicate"
     removed = "removed"
+    # Onaylı ürün katalogdan kaldırıldı (ör. üretimden kalktı): aramada
+    # görünmez, yeni kullanıcı ekleyemez; dolabında olanlarda durur.
+    delisted = "delisted"
 
 
 class User(Base):

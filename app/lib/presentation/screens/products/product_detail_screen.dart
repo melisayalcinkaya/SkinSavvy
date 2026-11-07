@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/product.dart';
+import '../../../data/remote/api_client.dart';
 import '../../../state/catalog_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/analysis_card.dart';
+import '../../widgets/app_snack.dart';
 import '../../widgets/product_image.dart';
 import '../../widgets/server_widgets.dart';
+import '../moderation/moderation_edit_screen.dart';
 import '../shared/add_product_modal.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -24,6 +27,12 @@ class ProductDetailScreen extends StatelessWidget {
     final p = found != null && found.isDuplicate
         ? catalog.byId(found.duplicateOf)
         : found;
+    if (p == null && catalog.isRemote && !catalog.fetchTried(productId)) {
+      // Listede olmayan ürün (ör. dolapta duran, katalogdan kaldırılmış):
+      // sunucudan bir kez getirilir.
+      catalog.ensureLoaded(productId);
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (p == null || p.isRemoved) {
       return const Scaffold(body: Center(child: Text('Ürün bulunamadı.')));
     }
@@ -31,8 +40,12 @@ class ProductDetailScreen extends StatelessWidget {
     final inShelf = context.select<ShelfController, bool>(
       (s) => s.activeForProduct(p.id) != null,
     );
+    final mine = catalog.submissions.any((s) => s.id == p.id);
+    final teamActions = catalog.isAdmin && (p.isApproved || p.isDelisted);
     final badge = p.isPending
         ? 'Onay bekliyor'
+        : p.isDelisted
+        ? 'Katalogdan kaldırıldı'
         : p.isNew(DateTime.now())
         ? 'Yeni'
         : null;
@@ -72,6 +85,7 @@ class ProductDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (teamActions) _TeamMenu(product: p),
                 ],
               ),
             ),
@@ -107,11 +121,13 @@ class ProductDetailScreen extends StatelessWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    gradient: p.isPending
+                                    gradient: p.isPending || p.isDelisted
                                         ? null
                                         : AppGradients.badge,
                                     color: p.isPending
                                         ? AppColors.secondary
+                                        : p.isDelisted
+                                        ? AppColors.textGrey
                                         : null,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -257,6 +273,22 @@ class ProductDetailScreen extends StatelessWidget {
                           const SizedBox(height: 14),
                           _infoCard('Faydaları', p.benefits),
                         ],
+                        if (p.isDelisted) ...[
+                          const SizedBox(height: 12),
+                          _notice(
+                            Icons.inventory_2_outlined,
+                            inShelf
+                                ? 'Bu ürün katalogdan kaldırıldı. Dolabındaki '
+                                      'kaydın ve yorumun duruyor; dilediğin '
+                                      'zaman kendin çıkarabilirsin.'
+                                : 'Bu ürün katalogdan kaldırıldı; artık '
+                                      'dolaba eklenemiyor.',
+                          ),
+                        ],
+                        if (p.isPending && mine) ...[
+                          const SizedBox(height: 12),
+                          _WithdrawButton(product: p),
+                        ],
                         const SizedBox(height: 10),
                         AnalysisCard(
                           analysis: analyzeForUser(context, p.ingredients),
@@ -276,7 +308,36 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _notice(IconData icon, String text) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: AppColors.softGreen),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: AppColors.textGrey),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textDark,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
   Widget _addButton(BuildContext context, Product p, bool inShelf) {
+    // Katalogdan kaldırılan ürün yeni kullanıcıların dolabına eklenemez.
+    if (p.isDelisted && !inShelf) return const SizedBox.shrink();
     if (inShelf) {
       return Container(
         width: double.infinity,
@@ -380,6 +441,188 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         ),
       ],
+    ),
+  );
+}
+
+/// Ekibin katalogdaki ürün için işlemleri: düzenle, kaldır / geri al.
+class _TeamMenu extends StatelessWidget {
+  const _TeamMenu({required this.product});
+
+  final Product product;
+
+  Future<void> _run(
+    BuildContext context,
+    Future<void> Function() action,
+    String done,
+  ) async {
+    try {
+      await action();
+      if (context.mounted) showAppSnack(context, done);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    } on StateError catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
+  Future<void> _onSelected(BuildContext context, String action) async {
+    final catalog = context.read<CatalogController>();
+    final p = product;
+    switch (action) {
+      case 'edit':
+        final edited = await Navigator.push<Product>(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ModerationEditScreen(product: p, catalogProduct: true),
+          ),
+        );
+        if (edited == null || !context.mounted) return;
+        await _run(
+          context,
+          () => catalog.editProduct(p.id, edited),
+          'Ürün bilgileri güncellendi',
+        );
+      case 'delist':
+        final ok = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text(
+              'Katalogdan kaldır',
+              style: TextStyle(fontSize: 16),
+            ),
+            content: const Text(
+              'Ürün aramada ve katalogda görünmez, yeni kullanıcılar dolabına '
+              'ekleyemez. Dolabına eklemiş olanların kaydı ve yorumu durur. '
+              'İstediğin zaman geri alabilirsin.',
+              style: TextStyle(fontSize: 13),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Vazgeç'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+                child: const Text('Kaldır'),
+              ),
+            ],
+          ),
+        );
+        if (ok != true || !context.mounted) return;
+        await _run(
+          context,
+          () => catalog.delist(p.id),
+          '"${p.name}" katalogdan kaldırıldı',
+        );
+      case 'relist':
+        await _run(
+          context,
+          () => catalog.relist(p.id),
+          '"${p.name}" kataloğa geri alındı',
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => PopupMenuButton<String>(
+    tooltip: 'Ekip işlemleri',
+    icon: const Icon(Icons.more_vert, color: AppColors.textDark),
+    onSelected: (a) => _onSelected(context, a),
+    itemBuilder: (_) => [
+      const PopupMenuItem(
+        value: 'edit',
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.edit_outlined),
+          title: Text('Düzenle'),
+        ),
+      ),
+      if (product.isApproved)
+        const PopupMenuItem(
+          value: 'delist',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.inventory_2_outlined),
+            title: Text('Katalogdan kaldır'),
+          ),
+        )
+      else
+        const PopupMenuItem(
+          value: 'relist',
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.undo),
+            title: Text('Kataloğa geri al'),
+          ),
+        ),
+    ],
+  );
+}
+
+/// Kullanıcının, ekip bakmadan önce kendi önerisini geri çekmesi.
+class _WithdrawButton extends StatelessWidget {
+  const _WithdrawButton({required this.product});
+
+  final Product product;
+
+  Future<void> _withdraw(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Öneriyi geri çek', style: TextStyle(fontSize: 16)),
+        content: const Text(
+          'Öneri silinir ve dolabından da kalkar. Ekip henüz bakmadığı için '
+          'kimse görmemiş olur.',
+          style: TextStyle(fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Vazgeç'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.accent),
+            child: const Text('Geri çek'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final catalog = context.read<CatalogController>();
+    final shelf = context.read<ShelfController>();
+    try {
+      await catalog.withdraw(product.id);
+      // Öneriyle birlikte dolaptaki kaydı da kalkar.
+      for (final item in shelf.all.where((e) => e.productId == product.id)) {
+        shelf.remove(item.id);
+      }
+      if (!context.mounted) return;
+      showAppSnack(context, 'Öneri geri çekildi');
+      Navigator.pop(context);
+    } on ApiException catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    } on StateError catch (e) {
+      if (context.mounted) showAppSnack(context, e.message, error: true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    child: OutlinedButton.icon(
+      onPressed: () => _withdraw(context),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.accent,
+        side: BorderSide(color: AppColors.accent.withValues(alpha: 0.5)),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      icon: const Icon(Icons.undo, size: 18),
+      label: const Text('Öneriyi geri çek'),
     ),
   );
 }

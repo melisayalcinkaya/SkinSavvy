@@ -127,6 +127,13 @@ class FakeServer {
         ]);
       case 'GET /admin/submissions':
         return json([product('p-bekleyen', 'pending')]);
+      case 'GET /admin/products':
+        return json([product('p-kaldirilan', 'delisted')]);
+      case 'GET /products/p-eski':
+        return json(product('p-eski', 'delisted'));
+      case 'DELETE /products/p-bekleyen':
+        decisions.add(('p-bekleyen', 'withdraw', null));
+        return http.Response('', 204);
       case 'POST /products':
         if (body['name'] == 'Ürün p-onayli') {
           return json({
@@ -144,6 +151,13 @@ class FakeServer {
     if (decision != null) {
       decisions.add((decision.group(1)!, decision.group(2)!, body));
       return json(product(decision.group(1)!, 'approved'));
+    }
+    final catalogOp = RegExp(
+      r'^(PUT|POST) /admin/products/([^/]+?)(?:/(delist|relist))?$',
+    ).firstMatch(route);
+    if (catalogOp != null) {
+      decisions.add((catalogOp.group(2)!, catalogOp.group(3) ?? 'edit', body));
+      return json(product(catalogOp.group(2)!, 'approved'));
     }
     final review = RegExp(
       r'^(PUT|DELETE) /products/([^/]+)/reviews/me$',
@@ -485,6 +499,58 @@ void main() {
       await reviews.sync();
       expect(reviews.pendingSync, isEmpty);
       expect(reviews.forProduct('p-bekleyen'), isNotNull);
+    });
+  });
+
+  group('sunucu modunda katalog işlemleri', () {
+    setUp(() => auth.signIn('ayse@test.dev', 'Dogru-sifre-1'));
+
+    test(
+      'ekip düzenler, kaldırır, geri alır; kaldırılanlar listelenir',
+      () async {
+        final catalog = CatalogController(store, 'u1', api: api, isAdmin: true);
+        await catalog.reload();
+        expect(catalog.delisted.single.id, 'p-kaldirilan');
+        expect(catalog.byId('p-kaldirilan')?.isDelisted, isTrue);
+
+        final p = catalog.byId('p-onayli')!;
+        await catalog.editProduct(p.id, p.copyWith(name: 'Yeni <i>Ad</i>'));
+        await catalog.delist('p-onayli');
+        await catalog.relist('p-kaldirilan');
+        expect(server.decisions.map((d) => (d.$1, d.$2)), [
+          ('p-onayli', 'edit'),
+          ('p-onayli', 'delist'),
+          ('p-kaldirilan', 'relist'),
+        ]);
+        expect(
+          (server.decisions.first.$3! as Map)['name'],
+          isNot(contains('<')),
+        );
+        catalog.dispose();
+      },
+    );
+
+    test('listede olmayan ürün bir kez sunucudan getirilir', () async {
+      final catalog = CatalogController(store, 'u1', api: api);
+      await catalog.reload();
+      expect(catalog.byId('p-eski'), isNull);
+      expect(await catalog.ensureLoaded('p-eski'), isTrue);
+      expect(catalog.byId('p-eski')?.isDelisted, isTrue);
+      expect(await catalog.ensureLoaded('p-yok'), isFalse);
+      expect(catalog.fetchTried('p-yok'), isTrue);
+      catalog.dispose();
+    });
+
+    test('kullanıcı bekleyen önerisini geri çeker', () async {
+      final catalog = CatalogController(store, 'u1', api: api);
+      await catalog.reload();
+      await catalog.withdraw('p-bekleyen');
+      expect(server.decisions.single.$2, 'withdraw');
+      expect(catalog.submissions.any((p) => p.id == 'p-bekleyen'), isFalse);
+      // Kararı verilmiş öneri için istek gönderilmez.
+      await expectLater(catalog.withdraw('p-yinelenen'), throwsStateError);
+      expect(server.decisions, hasLength(1));
+      catalog.dispose();
     });
   });
 }

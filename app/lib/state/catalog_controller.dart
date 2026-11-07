@@ -66,6 +66,12 @@ class CatalogController extends UserStore {
   List<Product> _community = [];
   List<Product> _remoteSubmissions = [];
   List<Product> _remoteQueue = [];
+  List<Product> _remoteDelisted = [];
+
+  /// Sunucu modunda listede olmayan ama doğrudan açılan ürünler (ör. dolapta
+  /// duran, katalogdan kaldırılmış ürün).
+  final Map<String, Product> _extra = {};
+  final Set<String> _fetching = {};
   Set<String> _favorites = {};
   Set<String> _seen = {};
   bool _loading = false;
@@ -83,11 +89,14 @@ class CatalogController extends UserStore {
   /// Onaylı katalog + kullanıcının onay bekleyen ürünleri (yalnızca kendisi görür).
   List<Product> get products {
     final pending = submissions.where((p) => p.isPending);
+    // Cihaz modunda ekibin düzelttiği ya da kaldırdığı hazır katalog ürünleri
+    // ortak listede aynı kimlikle tutulur ve hazır kaydın yerine geçer.
+    final overridden = {for (final p in _community) p.id};
     final approved = isRemote
         ? _catalog
         : [
-            ..._community.where((p) => p.status == ProductStatus.approved),
-            ..._catalog,
+            ..._community.where((p) => p.isApproved),
+            ..._catalog.where((p) => !overridden.contains(p.id)),
           ];
     final list = [
       ...pending,
@@ -104,9 +113,10 @@ class CatalogController extends UserStore {
             if (uid != null && p.submittedBy == uid) p,
         ];
 
-  /// Kullanıcının kataloğa kazandırdığı ürün sayısı (onaylı + bekleyen;
-  /// yinelenen ve silinen öneriler sayılmaz).
-  int get contributionCount => submissions.where((p) => p.isLive).length;
+  /// Kullanıcının kataloğa kazandırdığı ürün sayısı (onaylı, bekleyen ve
+  /// sonradan katalogdan kaldırılan; yinelenen ve silinen öneriler sayılmaz).
+  int get contributionCount =>
+      submissions.where((p) => p.isLive || p.isDelisted).length;
 
   /// Yöneticinin onay kuyruğu (en eski önce).
   List<Product> get reviewQueue {
@@ -116,13 +126,53 @@ class CatalogController extends UserStore {
       ..sort((a, b) => (a.createdAt ?? '').compareTo(b.createdAt ?? ''));
   }
 
+  /// Katalogdan kaldırılan ürünler (ekibin geri alabilmesi için).
+  List<Product> get delisted {
+    if (!isAdmin) return const [];
+    if (isRemote) return List.unmodifiable(_remoteDelisted);
+    return _community.where((p) => p.isDelisted).toList()
+      ..sort((a, b) => searchKey(a.name).compareTo(searchKey(b.name)));
+  }
+
+  /// Ürünü kimliğiyle bulur; katalogdan kaldırılmış ürünler de bulunur
+  /// (dolabında olan açabilsin).
   Product? byId(String? id) {
     if (id == null) return null;
     for (final p in [...products, ...submissions, ...reviewQueue]) {
       if (p.id == id) return p;
     }
+    if (isRemote) {
+      for (final p in _remoteDelisted) {
+        if (p.id == id) return p;
+      }
+      return _extra[id];
+    }
+    for (final p in _community) {
+      if (p.id == id && p.isDelisted) return _withRating(p);
+    }
     return null;
   }
+
+  /// Sunucu modunda listede olmayan ürünü (ör. katalogdan kaldırılmış)
+  /// sunucudan bir kez getirir; bulunamazsa false.
+  Future<bool> ensureLoaded(String id) async {
+    final client = api;
+    if (client == null || byId(id) != null) return byId(id) != null;
+    if (!_fetching.add(id)) return false;
+    try {
+      final p = Product.fromJson(
+        asMap(await client.get('/products/${Uri.encodeComponent(id)}')),
+      );
+      _extra[id] = p;
+      _notify();
+      return true;
+    } on ApiException {
+      return false;
+    }
+  }
+
+  /// Bu ürün için bir kez denendi mi (sunucu modu)?
+  bool fetchTried(String id) => _fetching.contains(id);
 
   List<Product> search({String query = '', String category = 'Tümü'}) {
     final q = searchKey(query);
@@ -192,7 +242,13 @@ class CatalogController extends UserStore {
           for (final p in await client.get('/admin/submissions') as List)
             Product.fromJson(asMap(p)),
         ];
+        _remoteDelisted = [
+          for (final p in await client.get('/admin/products') as List)
+            Product.fromJson(asMap(p)),
+        ];
       }
+      _extra.clear();
+      _fetching.clear();
     } on ApiException catch (e) {
       _error = e.message;
     } finally {
@@ -434,12 +490,139 @@ class CatalogController extends UserStore {
     'imageUrl': e.imageUrl,
   };
 
+  // ── Katalogdaki ürünler (ekip) ──────────────────────────────
+
+  /// Onaylı ya da kaldırılmış ürünün bilgilerini düzeltir.
+  Future<void> editProduct(String productId, Product edited) async {
+    final current = _requireCatalogProduct(productId);
+    final client = api;
+    if (client != null) {
+      await client.put(
+        '/admin/products/${Uri.encodeComponent(productId)}',
+        _editBody(edited),
+      );
+      await reload();
+      return;
+    }
+    final dup = findDuplicate(
+      edited.name,
+      edited.brand,
+      barcode: edited.barcode,
+      ignoreId: productId,
+    );
+    if (dup != null) {
+      throw StateError('"${dup.brand} ${dup.name}" zaten katalogda.');
+    }
+    _upsertCommunity(
+      current.copyWith(
+        name: sanitizeInput(edited.name),
+        brand: sanitizeInput(edited.brand),
+        category: edited.category,
+        skinTypes: edited.skinTypes,
+        ingredients: edited.ingredients,
+        description: sanitizeInput(edited.description),
+        barcode: edited.barcode,
+        clearBarcode: edited.barcode == null,
+        imageUrl: edited.imageUrl,
+      ),
+    );
+  }
+
+  /// Ürünü katalogdan kaldırır: aramada görünmez, yeni kullanıcı dolabına
+  /// ekleyemez. Daha önce ekleyenlerin kaydı ve yorumu durur.
+  Future<void> delist(String productId) async {
+    final current = _requireCatalogProduct(productId);
+    if (!current.isApproved) throw StateError('Ürün zaten kaldırılmış.');
+    final client = api;
+    if (client != null) {
+      await client.post(
+        '/admin/products/${Uri.encodeComponent(productId)}/delist',
+        null,
+      );
+      await reload();
+      return;
+    }
+    _upsertCommunity(current.copyWith(status: ProductStatus.delisted));
+  }
+
+  /// Kaldırılan ürünü kataloğa geri alır.
+  Future<void> relist(String productId) async {
+    final current = _requireCatalogProduct(productId);
+    if (!current.isDelisted) throw StateError('Ürün zaten katalogda.');
+    final client = api;
+    if (client != null) {
+      await client.post(
+        '/admin/products/${Uri.encodeComponent(productId)}/relist',
+        null,
+      );
+      await reload();
+      return;
+    }
+    // Kaldırılmışken aynı ürün yeniden eklendiyse ikisi birden olmasın.
+    final dup = findDuplicate(
+      current.name,
+      current.brand,
+      barcode: current.barcode,
+      ignoreId: productId,
+    );
+    if (dup != null) {
+      throw StateError('Katalogda aynı ürün var; geri alınamaz.');
+    }
+    _upsertCommunity(current.copyWith(status: ProductStatus.approved));
+  }
+
+  Product _requireCatalogProduct(String productId) {
+    if (!isAdmin) throw StateError('Yalnızca ekip yapabilir.');
+    final p = byId(productId);
+    if (p == null || !(p.isApproved || p.isDelisted)) {
+      throw StateError('Ürün katalogda bulunamadı.');
+    }
+    return p;
+  }
+
+  /// Ortak listede kaydı günceller; hazır katalog ürünüyse kopyasını ekler.
+  void _upsertCommunity(Product updated) {
+    final exists = _community.any((p) => p.id == updated.id);
+    _community = exists
+        ? [for (final p in _community) p.id == updated.id ? updated : p]
+        : [updated, ..._community];
+    _saveCommunity();
+  }
+
+  // ── Öneriyi geri çekme ──────────────────────────────────────
+
+  /// Kullanıcı, ekip karar vermeden önce kendi önerisini geri çeker; öneri
+  /// tamamen silinir.
+  Future<void> withdraw(String productId) async {
+    final p = submissions.where((s) => s.id == productId).firstOrNull;
+    if (p == null) throw StateError('Öneri bulunamadı.');
+    if (!p.isPending) {
+      throw StateError('Ekip bu öneriye karar verdi; geri çekilemez.');
+    }
+    final client = api;
+    if (client != null) {
+      await client.delete('/products/${Uri.encodeComponent(productId)}');
+      _remoteSubmissions = [
+        for (final s in _remoteSubmissions)
+          if (s.id != productId) s,
+      ];
+      _notify();
+      return;
+    }
+    _community = [
+      for (final s in _community)
+        if (s.id != productId) s,
+    ];
+    _saveCommunity();
+  }
+
   // ── Karar bildirimleri ──────────────────────────────────────
 
   /// Kullanıcının henüz görmediği ekip kararları.
   List<Product> get unseenDecisions => [
     for (final p in submissions)
-      if (!p.isPending && !_seen.contains(_decisionKey(p))) p,
+      // Katalogdan kaldırma öneri kararı değildir; önerene bildirilmez.
+      if (!p.isPending && !p.isDelisted && !_seen.contains(_decisionKey(p))) p,
   ];
 
   void markDecisionSeen(String productId) {

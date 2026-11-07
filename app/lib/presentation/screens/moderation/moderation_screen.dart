@@ -30,6 +30,7 @@ class ModerationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final catalog = context.watch<CatalogController>();
     final queue = catalog.reviewQueue;
+    final delisted = catalog.delisted;
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
@@ -79,21 +80,32 @@ class ModerationScreen extends StatelessWidget {
               child: RefreshIndicator(
                 color: AppColors.primary,
                 onRefresh: catalog.reload,
-                child: queue.isEmpty
-                    ? ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        children: const [_Empty()],
-                      )
-                    : ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(14),
-                        itemCount: queue.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (_, i) => _SubmissionCard(
-                          queue[i],
-                          key: ValueKey(queue[i].id),
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(14),
+                  children: [
+                    if (queue.isEmpty) const _Empty(),
+                    for (final p in queue) ...[
+                      _SubmissionCard(p, key: ValueKey(p.id)),
+                      const SizedBox(height: 12),
+                    ],
+                    // Katalogdan kaldırılan ürünler aramada görünmez; ekip
+                    // geri almak için buradan ulaşır.
+                    if (delisted.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Katalogdan kaldırılanlar (${delisted.length})',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textDark,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      for (final p in delisted) _DelistedTile(p),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -653,6 +665,64 @@ class _Empty extends StatelessWidget {
             color: AppColors.textGrey,
             height: 1.45,
           ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _DelistedTile extends StatelessWidget {
+  const _DelistedTile(this.p);
+
+  final Product p;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.fromLTRB(10, 8, 4, 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      children: [
+        ProductImage(p.imageUrl, width: 40, height: 40, category: p.category),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                p.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 13),
+              ),
+              Text(
+                p.brand,
+                style: const TextStyle(fontSize: 11, color: AppColors.textGrey),
+              ),
+            ],
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            try {
+              await context.read<CatalogController>().relist(p.id);
+              if (context.mounted) {
+                showAppSnack(context, '"${p.name}" kataloğa geri alındı');
+              }
+            } on ApiException catch (e) {
+              if (context.mounted) {
+                showAppSnack(context, e.message, error: true);
+              }
+            } on StateError catch (e) {
+              if (context.mounted) {
+                showAppSnack(context, e.message, error: true);
+              }
+            }
+          },
+          child: const Text('Geri al'),
         ),
       ],
     ),

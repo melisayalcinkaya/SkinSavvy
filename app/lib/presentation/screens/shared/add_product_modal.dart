@@ -8,6 +8,7 @@ import '../../../core/utils/text_utils.dart';
 import '../../../data/models/product.dart';
 import '../../../data/models/routine.dart';
 import '../../../data/models/shelf_item.dart';
+import '../../../state/catalog_controller.dart';
 import '../../../state/routine_controller.dart';
 import '../../../state/shelf_controller.dart';
 import '../../widgets/app_snack.dart';
@@ -56,8 +57,28 @@ class _AddProductModalState extends State<AddProductModal> {
     _ => '',
   };
 
+  /// Katalogdan kaldırılan ürün yeni kayıt olarak dolaba eklenemez (zaten
+  /// dolapta olan kaydı kullanmaya başlamak serbest).
+  bool _blockedNewEntry() {
+    final p = widget.product;
+    if (p == null) return false;
+    final delisted =
+        context.read<CatalogController>().byId(p.id)?.isDelisted ??
+        p.isDelisted;
+    if (!delisted) return false;
+    Navigator.pop(context);
+    showAppSnack(
+      context,
+      'Bu ürün katalogdan kaldırıldı; dolaba eklenemiyor.',
+      error: true,
+      bottom: 70,
+    );
+    return true;
+  }
+
   void _save({required bool withDetails}) {
     if (withDetails && !_formKey.currentState!.validate()) return;
+    if (widget.shelfItem == null && _blockedNewEntry()) return;
     final shelf = context.read<ShelfController>();
     final routine = context.read<RoutineController>();
     final opened = withDetails ? parseDateInput(openDateCtrl.text) : null;
@@ -102,6 +123,7 @@ class _AddProductModalState extends State<AddProductModal> {
   }
 
   void _addToWishlist() {
+    if (_blockedNewEntry()) return;
     context.read<ShelfController>().addProduct(
       widget.product!,
       status: ShelfStatus.wishlist,

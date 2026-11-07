@@ -9,15 +9,23 @@ import '../../../state/catalog_controller.dart';
 import '../../widgets/app_snack.dart';
 import '../../widgets/product_photo.dart';
 
-/// Ekibin öneriyi düzeltip onayladığı form. Ad, marka, kategori, cilt
+/// Ekibin ürün bilgilerini düzelttiği form: bekleyen öneri için "düzenle ve
+/// onayla", katalogdaki ürün için "düzenle". Ad, marka, kategori, cilt
 /// tipleri, içerik, açıklama, barkod ve fotoğraf değiştirilebilir.
 ///
-/// Kaydedilince düzeltilmiş ürünü döndürür; onaylama işini çağıran yapar.
+/// Kaydedilince düzeltilmiş ürünü döndürür; kaydetme işini çağıran yapar.
 /// Sınırlar ürün önerme formuyla ve sunucuyla aynıdır.
 class ModerationEditScreen extends StatefulWidget {
-  const ModerationEditScreen({super.key, required this.product});
+  const ModerationEditScreen({
+    super.key,
+    required this.product,
+    this.catalogProduct = false,
+  });
 
   final Product product;
+
+  /// Katalogdaki (onaylı ya da kaldırılmış) ürün mü düzenleniyor?
+  final bool catalogProduct;
 
   @override
   State<ModerationEditScreen> createState() => _ModerationEditScreenState();
@@ -69,9 +77,10 @@ class _ModerationEditScreenState extends State<ModerationEditScreen> {
       ignoreId: _p.id,
     );
     if (dup != null) {
-      error =
-          '"${dup.brand} ${dup.name}" zaten katalogda; '
-          'bu öneriyi "Yinelenen" olarak işaretleyin.';
+      error = widget.catalogProduct
+          ? '"${dup.brand} ${dup.name}" zaten katalogda.'
+          : '"${dup.brand} ${dup.name}" zaten katalogda; '
+                'bu öneriyi "Yinelenen" olarak işaretleyin.';
     }
     if (error != null) {
       showAppSnack(context, error, error: true);
@@ -111,8 +120,8 @@ class _ModerationEditScreenState extends State<ModerationEditScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textDark),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Düzenle ve onayla',
+        title: Text(
+          widget.catalogProduct ? 'Ürünü düzenle' : 'Düzenle ve onayla',
           style: TextStyle(fontSize: 15, color: AppColors.textDark),
         ),
       ),
@@ -125,9 +134,13 @@ class _ModerationEditScreenState extends State<ModerationEditScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Öneren: ${_p.addedBy ?? 'kullanıcı'}. Düzelttiğin bilgiler '
-                  'onayla birlikte kaydedilir; önerene "ekip düzenledi" notuyla '
-                  'bildirim gider.',
+                  widget.catalogProduct
+                      ? 'Düzelttiğin bilgiler katalogda herkes için '
+                            'güncellenir. Ürünü dolabına eklemiş olanların '
+                            'kendi kaydı değişmez.'
+                      : 'Öneren: ${_p.addedBy ?? 'kullanıcı'}. Düzelttiğin '
+                            'bilgiler onayla birlikte kaydedilir; önerene '
+                            '"ekip düzenledi" notuyla bildirim gider.',
                   style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textGrey,
@@ -230,7 +243,9 @@ class _ModerationEditScreenState extends State<ModerationEditScreen> {
                       ),
                     ),
                     icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Kaydet ve onayla'),
+                    label: Text(
+                      widget.catalogProduct ? 'Kaydet' : 'Kaydet ve onayla',
+                    ),
                   ),
                 ),
               ],

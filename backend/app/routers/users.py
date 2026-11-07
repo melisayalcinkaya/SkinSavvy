@@ -36,9 +36,11 @@ def update_me(body: UserUpdate, user: CurrentUser, db: DbDep, settings: Settings
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 def delete_me(user: CurrentUser, db: DbDep) -> Response:
-    # Onay bekleyen/reddedilen önerileri sil; onaylanmış ürünler katalogda kalır
+    # Bekleyen, yinelenen ve silinen önerileri sil. Katalog ürünleri (onaylı ya
+    # da katalogdan kaldırılmış) başkalarının dolabında olabilir, kalır
     # (submitted_by veritabanında SET NULL olur).
-    db.execute(delete(Product).where(Product.submitted_by == user.id, Product.status != ProductStatus.approved))
+    catalog = (ProductStatus.approved, ProductStatus.delisted)
+    db.execute(delete(Product).where(Product.submitted_by == user.id, Product.status.not_in(catalog)))
     db.delete(user)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

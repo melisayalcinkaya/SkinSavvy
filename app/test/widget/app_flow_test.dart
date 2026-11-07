@@ -326,4 +326,74 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'ekip ürünü katalogdan kaldırır; dolaptaki kayıt durur, geri alınır',
+    (tester) async {
+      await pumpApp(tester);
+      await tapText(tester, 'Demo hesabıyla dene');
+      await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+      await tapText(tester, 'Nem Dengesi Temizleyici');
+      expect(find.byType(ProductDetailScreen), findsOneWidget);
+      await tapFinder(tester, find.byTooltip('Ekip işlemleri'));
+      await tapText(tester, 'Katalogdan kaldır');
+      await tapButton<TextButton>(tester, 'Kaldır');
+      expect(find.text('Katalogdan kaldırıldı'), findsOneWidget);
+      expect(find.textContaining('Dolabındaki kaydın'), findsOneWidget);
+      await tapFinder(tester, find.byTooltip('Geri'));
+
+      // Aramada çıkmaz; dolaptaki kayıt durur ve işaretlenir.
+      await tester.enterText(find.byType(TextField).first, 'Nem Dengesi');
+      await tester.pumpAndSettle();
+      expect(find.text('Ürün bulunamadı'), findsOneWidget);
+      expect(
+        shelfOf(tester).all.any((e) => e.productId == 'p-temizleyici-lumen'),
+        isTrue,
+      );
+      await tester.enterText(find.byType(TextField).first, '');
+      await tapFinder(tester, find.byIcon(Icons.bookmarks_outlined).last);
+      expect(find.text('Katalogdan kaldırıldı'), findsOneWidget);
+
+      // Ekip onay ekranından geri alır.
+      await tapFinder(tester, find.byIcon(Icons.person_outline).last);
+      await tapText(tester, 'Onay Bekleyen Ürünler');
+      expect(find.text('Katalogdan kaldırılanlar (1)'), findsOneWidget);
+      await tapButton<TextButton>(tester, 'Geri al');
+      expect(find.textContaining('Katalogdan kaldırılanlar'), findsNothing);
+    },
+  );
+
+  testWidgets('ekip katalogdaki ürünü düzenler', (tester) async {
+    await pumpApp(tester);
+    await tapText(tester, 'Demo hesabıyla dene');
+    await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+    await tapText(tester, 'Retinol %0.3 Gece Serumu');
+    await tapFinder(tester, find.byTooltip('Ekip işlemleri'));
+    await tapText(tester, 'Düzenle');
+    expect(find.text('Ürünü düzenle'), findsOneWidget);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Ürün adı'),
+      'Retinol %0.3 Gece Serumu Yeni',
+    );
+    await tapText(tester, 'Kaydet');
+    expect(find.text('Retinol %0.3 Gece Serumu Yeni'), findsOneWidget);
+  });
+
+  testWidgets('kullanıcı bekleyen önerisini geri çeker', (tester) async {
+    await pumpApp(tester);
+    await proposeAndOpenQueue(tester, 'Lavanta Tonik');
+    await tapFinder(tester, find.byTooltip('Geri'));
+    await tapText(tester, 'Koleksiyonuma Git');
+    await tapFinder(tester, find.byIcon(Icons.shopping_bag_outlined).last);
+    await tester.enterText(find.byType(TextField).first, '');
+    await tester.pumpAndSettle();
+    await tapText(tester, 'Lavanta Tonik');
+    await tapButton<OutlinedButton>(tester, 'Öneriyi geri çek');
+    await tapButton<TextButton>(tester, 'Geri çek');
+    expect(find.byType(ProductDetailScreen), findsNothing);
+    expect(shelfOf(tester).all.any((e) => e.name == 'Lavanta Tonik'), isFalse);
+    await tapFinder(tester, find.byIcon(Icons.person_outline).last);
+    await tapText(tester, 'Onay Bekleyen Ürünler');
+    expect(find.text('İncelenecek öneri yok'), findsOneWidget);
+  });
 }

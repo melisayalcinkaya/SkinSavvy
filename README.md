@@ -70,6 +70,12 @@ kullanıcı fark etmeden önce gösterir.
   | **Yinelenen** | Ürün katalogda zaten var: öneri asıl ürüne bağlanır, ekleyenin dolap kaydı tarihleri, notu ve yorumuyla birlikte asıl ürüne taşınır. |
   | **Sil** (spam/sahte) | Öneri katalogdan ve ekleyenin dolabından kalkar; fotoğrafı ve içeriği saklanmaz. |
 
+  Onaydan sonra da ekip, ürün sayfasındaki menüden ürünü **düzenleyebilir** ya da
+  **katalogdan kaldırabilir** (ör. üretimden kalktıysa). Kaldırılan ürün aramada
+  görünmez ve yeni kullanıcı dolabına ekleyemez; ama daha önce ekleyenlerin kaydı,
+  rutini ve yorumu kullanıcı kendisi çıkarana kadar durur. Ekip istediğinde geri alır.
+  Kullanıcı da ekip bakmadan önce kendi önerisini **geri çekebilir**.
+
   Her kararda ekleyene zil simgesinden bildirim gider. Ürün sayfasında
   "Ekleyen: Zeynep K." yazar, yeni onaylananlar "Yeni" etiketi alır.
 - **Yorumlar:** ürün başına tek yorum (ikincisi günceller). Puanlar yalnızca gerçek
@@ -177,7 +183,7 @@ cd app && dart run tool/export_demo_catalog.dart
 | | Kapsam |
 |---|---|
 | **Uygulama** (`flutter test`) | içerik eşleştirme ve analiz kuralları, rutin danışmanı, hatırlatmalar (PAO / SKT, ay sonu taşması), ekip kararlarının dolaba ve yorumlara yansıması, kalıcılık ve kullanıcı ayrımı, kimlik doğrulama, sahte sunucuyla sunucu modu (token yenileme, çevrimdışı yorum kuyruğu, yarış durumu), demo / kayıt / karşılama / öneri-onay-yinelenen-silme akışları, **320 px, 390 px ve 1280 px'te bütün ana ekranlarda taşma taraması** |
-| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay / düzeltip onay / yinelenen / silme kararları, yorumlardan hesaplanan puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
+| **Sunucu** (`pytest`) | kayıt/giriş, token dönüşü ve aile iptali, hız sınırları, yetki ve görünürlük, görsel doğrulama, onay / düzeltip onay / yinelenen / silme kararları, katalogdan kaldırma ve geri alma, öneriyi geri çekme, yorumlardan hesaplanan puan, hesap silme, güvenlik başlıkları, Docker duman testi; uygulamadaki seçenek listeleriyle **sözleşme testi** · kapsam ~%99 (CI alt sınırı %90) |
 
 CI her gönderimde: `dart format`, `flutter analyze`, testler, web derlemesi; `ruff`,
 `pytest --cov`, Docker imajı + duman testi; ikisi de geçerse GitHub Pages'e yayın.

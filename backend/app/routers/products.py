@@ -27,20 +27,25 @@ def find_duplicate(db, name_key: str, brand_key: str, barcode: str | None, ignor
     return db.scalars(stmt.limit(1)).first()
 
 
-def _visible(user: User | None):
+def _visible(user: User | None, *, include_delisted: bool = False):
     """Onaylı ürünler herkese; bekleyen öneri yalnızca ekleyene.
 
     Yinelenen ya da silinen öneriler katalogda görünmez; öneren kararı
-    /products/mine üzerinden öğrenir.
+    /products/mine üzerinden öğrenir. Katalogdan kaldırılan ürün listede ve
+    aramada yoktur ama doğrudan açılabilir: dolabında olanlar bilgisine ve
+    yorumlarına ulaşmaya devam eder.
     """
-    approved = Product.status == ProductStatus.approved
+    shown = [ProductStatus.approved]
+    if include_delisted:
+        shown.append(ProductStatus.delisted)
+    public = Product.status.in_(shown)
     if user is None:
-        return approved
-    return or_(approved, and_(Product.status == ProductStatus.pending, Product.submitted_by == user.id))
+        return public
+    return or_(public, and_(Product.status == ProductStatus.pending, Product.submitted_by == user.id))
 
 
 def _get_visible(db, product_id: str, user: User | None) -> Product:
-    p = db.scalar(select(Product).where(Product.id == product_id, _visible(user)))
+    p = db.scalar(select(Product).where(Product.id == product_id, _visible(user, include_delisted=True)))
     if p is None:
         # Başkasının bekleyen ürünü için de 404: varlığı sızmasın.
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Ürün bulunamadı.")
@@ -83,6 +88,20 @@ def my_submissions(db: DbDep, user: CurrentUser):
 def get_product(product_id: str, db: DbDep, user: OptionalUser):
     p = _get_visible(db, product_id, user)
     return product_out(p, rating_stats(db, [p.id]).get(p.id), owner_view=user is not None and p.submitted_by == user.id)
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+def withdraw_submission(product_id: str, db: DbDep, user: CurrentUser) -> Response:
+    """Kullanıcı, ekip bakmadan önce kendi önerisini geri çeker."""
+    p = db.get(Product, product_id)
+    if p is None or p.submitted_by != user.id:
+        # Başkasının önerisi için de 404: varlığı sızmasın.
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Öneri bulunamadı.")
+    if p.status != ProductStatus.pending:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ekip bu öneriye karar verdi; geri çekilemez.")
+    db.delete(p)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
@@ -144,7 +163,7 @@ def list_reviews(
 def upsert_review(product_id: str, body: ReviewIn, db: DbDep, user: CurrentUser, limiter: LimiterDep):
     limiter.hit(f"review:{user.id}", limit=30, window_seconds=3600)
     p = _get_visible(db, product_id, user)
-    if p.status != ProductStatus.approved:
+    if p.status not in (ProductStatus.approved, ProductStatus.delisted):
         raise HTTPException(status.HTTP_409_CONFLICT, "Onaylanmamış ürüne yorum yazılamaz.")
     review = db.scalar(select(Review).where(Review.product_id == p.id, Review.user_id == user.id))
     if review is None:
